@@ -34,7 +34,8 @@
           "**/*.jpg",
           "**/*.jpeg",
           "**/*.gif",
-          "**/*.svg"
+          "**/*.svg",
+          "feed.xml"
         ],
         "exclude": [
           "**/obj/**",
