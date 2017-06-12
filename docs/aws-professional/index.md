@@ -233,8 +233,6 @@ creating a full copy of your solution in both regions.
 -   [Regions and availability for virtual machines in
     Azure](https://azure.microsoft.com/documentation/articles/virtual-machines-linux-regions-and-availability/)
 
--   [High availability for Azure applications](../resiliency/high-availability-azure-applications.md)
-
 -   [Disaster recovery for Azure applications](../resiliency/disaster-recovery-azure-applications.md)
 
 -   [Planned maintenance for Linux virtual machines in
