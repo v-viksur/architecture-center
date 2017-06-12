@@ -58,6 +58,10 @@
     "fileMetadata": {
       "tocRel":{
         "reference-architectures/**.md":"../toc.json"
+      },
+      "redirect_url": {
+        "resiliency/recovery-local-failures.md":"/azure/resiliency",
+        "resiliency/high-availability-azure-applications.md":"/azure/resiliency"
       }
     },
     "template": [
