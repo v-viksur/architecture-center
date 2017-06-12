@@ -60,8 +60,10 @@
         "reference-architectures/**.md":"../toc.json"
       },
       "redirect_url": {
+        "resiliency/high-availability-checklist.md":"/azure/architecture/checklist/availability",
         "resiliency/recovery-local-failures.md":"/azure/architecture/resiliency",
-        "resiliency/high-availability-azure-applications.md":"/azure/architecture/resiliency"
+        "resiliency/high-availability-azure-applications.md":"/azure/architecture/resiliency",
+        "resiliency/disaster-recovery-high-availability-azure-applications.md":"/azure/architecture/checklist/availability"
       }
     },
     "template": [
