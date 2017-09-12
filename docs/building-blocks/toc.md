@@ -1,8 +1,8 @@
-# Template Building Blocks
+# Azure Building Blocks
 
 ## [Overview](./index.md)
 ## Get Started
-### [Set up the template building blocks]()
+### [Set up Azure Building Blocks]()
 ## How To
 ### [Use the command line interface]()
 ### [Deploy a Virtual Network](./vnet.md)
