@@ -4,4 +4,7 @@ description: Deploy a virtual network (VNet) using Azure Resource Manager templa
 author:
 ---
 
-# Deploy a virtual machine (VM)
+# Tutorial 3: Deploy a virtual machine (VM)
+
+If you completed tutorials 1 and 2, you know how to use the Azure Building Blocks to deploy virtual networks and connect them together using the Azure backbone network. 
+

@@ -39,19 +39,23 @@ There are several ways to connect VNets together:
 
 By default, all inbound and outbound traffic within a VNet is allowed. We recommend you use network security groups to specify security rules to only allow expected network traffic within the VNet.
 
-## Tutorials: Deploying a virtual network using Azure Building Blocks
+## Tutorials: deploying resources using Azure Building Blocks
 
-The objective of the following set of tutorials is to teach you how to deploy a virtual network using the [Azure Building Blocks][azure-building-blocks]. To learn how to deploy a virtual network using other methods, we recommend you read the [create a virtual network][create-a-vnet] document.
+The objective of the following set of tutorials is to teach you how to develop Azure Building Block parameter files that deploy complex architectures. The Azure Building Blocks project is a command line tool and set of standard Azure Resource Manager templates designed to simply resource deployment. Resources are specified using a single or multiple parameter files authored in JSON. The command line tool merges best practices defaults with the specified parameters and deploys the resources to Azure.
+
+These tutorials are progressive, beginning with a tutorial showing how to deploy a simple virtual network, then adding multiple virtual networks, multiple virtual machines, and load balancers. These tutorials will also demonstrate how to implement security features such as a virtual network protected by a network security group, and a virtual machine running as a jumpbox. By the end of these tutorials you will have learned how to author the parameter files to deploy a secure architecture capable of hosting a multi-tier application. 
 
 ### Before you start
 
 All the tutorials in this document are deployed using the [Azure Building Blocks][azbb]. Before you start this tutorial, we suggest you first read the [Azure Building Blocks overview][azbb-overview] on the wiki. Next, [install][azbb-install] the Azure Building Blocks and become familiar with the [structure][azbb-parameter-file] of an Azure Building Blocks parameter file.
 
+The Azure Building Blocks require an active Azure subscription with permission to deploy . You will also require an editor to open and view JSON files.
+
 Finally, [clone][github-how-to-clone] the [Azure Building Blocks][azbb] Github repository. The repository includes a folder named `scenarios` that contains a number of example Azure Building Blocks parameter files. We'll use these files for the following tutorials.
 
-## Tutorial 1: deploying a simple VNet
+## Tutorial 1: deploy a simple VNet
 
-This tutorial will walk you through an example [Azure Building Blocks][azure-building-blocks] parameter file and explain how to specify the necessary settings for a simple VNet. You will then learn how to use the Azure Building Blocks command line tool to deploy the resources specified in the parameter file.
+This tutorial will walk you through an example [Azure Building Blocks][azure-building-blocks] parameter file and explain how to specify the necessary settings for a simple VNet. You will then learn how to use the Azure Building Blocks command line tool to deploy the resources specified in the parameter file. To learn how to deploy a virtual network using other methods, we recommend you read the [create a virtual network][create-a-vnet] document.
 
 ### Before You Start
 
@@ -86,7 +90,7 @@ Every Azure Building block requires a `settings` object where we specify the pro
 
 In Azure, each resource requires a name to uniquely identify the resource within a resource group. In Azure Building Blocks, you specify a `name` property for each resource type to provide this unique name. When we deploy this parameter file using the command line tool, this is the name that we'll see in the Azure portal user interface. In this parameter file we've named the VNet `msft-hub-vnet` because this in future tutorials this will become the central "hub" VNet for our 
 
-Next, we specify the virtual network address space using the `addressPrefixes` property. The address space is specified using [CIDR notation][cidr-notation]. In our example parameter file, we've specified the address space to be `10.0.0.0/16`. This means Azure Resource Manager allocates `65536` IP addresses beginning at `10.0.0.0` and ending at `10.0.255.255` for our VNet. 
+Next, we specify the address space for our virtual network using the `addressPrefixes` property. The address space is specified using [CIDR notation][cidr-notation]. In our example parameter file, we've specified the address space to be `10.0.0.0/16`. This means Azure Resource Manager allocates `65536` IP addresses beginning at `10.0.0.0` and ending at `10.0.255.255` for our VNet. 
 
 Notice that the field for specifying the virtual network address space is an array. The reason for this is because we can specify multiple address ranges. For example, in addition to `10.0.0.0/16` we could have also specified `11.0.0.0/16` to spedify everything between `11.0.0.0` and `11.0.255.255` as well:
 
@@ -117,7 +121,7 @@ azbb -g <new or existing resource group> -s <subscription ID> -l <region> -p vne
 
 The command line tool will parse the `vnet-simple.json` file and deploy it to Azure using Azure Resource Manager. To verify that the VNet was deployed, visit the [Azure Portal][azure-portal], click on `Resource Groups` in the left-hand pane to open the **Resource Groups** blade, then click on the name of the resource group you specified above. The blade for that resource group will open, and you should see the `msft-hub-vnet` in the list of resources.
 
-## Tutorial 2: Connecting VNets Using Peering
+## Tutorial 2:connect VNets Using Peering
 
 While we've only set up a single VNet so far, our goal is to eventually deploy some VMs and have them communicate with one another. By default, internal communication between resources deployed to a VNet is enabled. However, if you have deployed multiple VNets and you want to enable communication between them, you must set up VNet peering. The Azure Building Block for a VNet includes properties to specify this connection.
 
