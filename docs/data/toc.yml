@@ -1,0 +1,5 @@
+- name: Azure Architecture Center
+  href: /azure/architecture
+  
+- name: Data + Analytics Guide
+  href: index.md
