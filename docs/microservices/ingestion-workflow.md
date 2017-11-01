@@ -1,12 +1,14 @@
 # Ingestion and workflow
 
-In this section, we describe how the Drone Delivery application handles incoming client requests. This involves ingesting the requests at high volume, and then initiating a workflow for each request. The application must be able to service requests in a reliable and efficient manner, including handling failures. 
+In this section, we describe how the Drone Delivery application handles incoming client requests. The application must ingesting the requests at high volume and also manage a workflow for each request. 
+
+Because each microservice handles a single responsibility, it's common to have a workflow that spans multiple services for a single transaction. The workflow must be reliable; it can't lost transactions or leave transactions in a partially completed state. Managing ingestion is also very important in a microservices architecture. Because there are many small services that communicate with each other, you need to control the rate of incoming requests. Otherwise, they can overwhelm the inter-service communication. 
 
 ![](./images/ingestion-workflow.png)
 
 ## The drone delivery workflow
 
-When you decompose and application in microservices, it's common for a single operation to consist of multiple steps that span services. In the Drone Delivery application, scheduling a new delivery requires the following steps:
+In the Drone Delivery application, the following operations must be performed to schedule a delivery:
 
 1. Check the status of the customer's account (Account service).
 2. Create a new package entity (Package service).
@@ -14,7 +16,7 @@ When you decompose and application in microservices, it's common for a single op
 4. Schedule a drone for pickup (Drone service).
 5. Create a new delivery entity (Delivery service).
 
-This is the core of the entire application, so the end-to-end process must be performant as well as reliable. Here are some of the particular challenges that must be addressed:
+This is the core of the entire application, so the end-to-end process must be performant as well as reliable. Some particular challenges must be addressed:
 
 - **Load leveling**. Too many client requests can overwhelm the system with inter-service network traffic. It can also overwhelm backend dependencies such as storage or remote services. These may react by throttling the services calling them, creating back pressure in the system. Therefore, it's important to load level the requests coming into the system, by putting them into a buffer or queue for processing. 
 
@@ -36,7 +38,7 @@ The requirement to handle occasional spikes in traffic presents a design challen
 
 A better approach is to put the incoming requests into a buffer, and let the buffer act as a load leveler. With this design, the Delivery Scheduler must be able to the maximum ingestion rate of 100K requests/second over short periods, but the backend services only need to handle the maximum sustained load of 10K. By buffering at the front end, the backend services shouldn't need to handle large spikes in traffic.
 
-At the scale the development team is targeting, Event Hubs is a good choice for load leveling, because of its high ingestion rate. Our tests showed that ingress per event hub was about 32k ops/sec with latency around 90ms. The delivery scheduler is also capable of sharding across more than one event hub. Ingress with 2 event hubs was 45k ops/sec with latency below 100 ms. (As with all performance metrics, there can be multiple factors that affect performance, so don't interpret these numbers as a benchmark.)
+At the scale the development team is targeting, Event Hubs is a good choice for load leveling, because of its high ingestion rate. Our tests showed that ingress per event hub was about 32k ops/sec with latency around 90ms. The delivery scheduler is also capable of sharding across more than one event hub. Ingress with 2 event hubs was 45k ops/sec with latency below 100 ms. (As with all performance metrics, there can be multiple factors that affect performance, so don't interpret these numbers as a benchmark.) Event Hubs also has cost benefits compared with other options.
 
 It's important to understand how Event Hubs can achieve such high throughput, because that affects how a client should consume messages from Event Hubs. Event Hubs does not implement a *queue*. Rather, it implements an *event stream*. 
 
@@ -83,11 +85,11 @@ IoTHub React uses a different checkpoint strategy than Event Host Processor. The
  
 Considerations for scaling:
 
-- To make it easier to scale out, each instance of the dispatcher service is assigned a single
+- To make it easier to scale out, each instance of the dispatcher service reads from a single partition. 
 
 - To scale the dispatcher has to be deployed as a statefulsets in kubernetes. Like Deployments, StatefulSets manage Pods that are based on an identical container spec. However, although their specs are the same, the Pods in a StatefulSet are not interchangeable. Each Pod has a persistent identifier that it maintains across any rescheduling. In the case of dispatcher the identifier for the container is the partition id that is assigned to each pod running the workflow. Each pod will execute the messages for its own partition. Pods can overlap on the VM giving a cost effective way to distribute workload in a high density model. This is easy to manage through image updates and deployment cycles. 
 
-- Customers with higher scale requirements than the number of partitions in event hub, can implement a hashing algorithm in the dispatcher and deploy more than one readers per partition pointing to different storage accounts. The result of this configuration is that multiple readers will pick up messages overlapping among them but will only process the messages that belong to them, according to their hashing algorithm.
+- Customers with higher scale requirements than the number of partitions in Event Hubs, can implement a hashing algorithm in the dispatcher and deploy more than one readers per partition pointing to different storage accounts. The result of this configuration is that multiple readers will pick up messages overlapping among them but will only process the messages that belong to them, according to their hashing algorithm.
 
 - Correct sizing of nodes and the right density of them in VMS is important aspect on the dispatcher deployment. The dispatcher is memory and thread bound, because of the akka framework. 
 

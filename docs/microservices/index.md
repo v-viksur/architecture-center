@@ -1,4 +1,4 @@
-# Build and run a microservices architecture on Azure
+# Designing microservices on Azure
 
 Microservices have become a popular architectural style for building cloud applications that are resilient, highly scalable, and able to evolve quickly. To be more than just a buzzword, however, microservices requires a different approach to designing and building applications. 
 

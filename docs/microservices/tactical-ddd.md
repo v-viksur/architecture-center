@@ -36,7 +36,7 @@ Traditional applications have often used database transactions to enforce consis
 > [!NOTE]
 > The term *service* is overloaded in computer programming. The definition here is not directly related to microservices.
  
-There are a few other DDD patterns not listed here, including factories, repositories, and modules, but these are less relevant for our purposes.
+There are a few other DDD patterns not listed here, including factories, repositories, and modules. These can be useful patterns within a microservice, but are less relevant for our purposes.
 
 ## Define entities and aggregates
 
@@ -68,7 +68,7 @@ To illustrate, here is a UML diagram of the Delivery aggregate. Notice that it h
 
 ![](./images/delivery-entity.png)
 
-The development team also identified an important piece of functionality that doesn't fit neatly into any of the entities or aggregates. Some part of the system must coordinate all of the steps involved in scheduling or updating a delivery. We'll go into this topic in more detail (see [Ingestion and workflow](./ingestion-workflow.md)), but to summarize, the development team decides to implement two **application services**:
+The development team also identified an important piece of functionality that doesn't fit neatly into any of the entities or aggregates. Some part of the system must coordinate all of the steps involved in scheduling or updating a delivery. We'll go into this topic in more detail (see [Ingestion and workflow](./ingestion-workflow.md)), but to summarize, the development team decides to implement two **domain services**:
 
 - A *Scheduler* that coordinates the steps.
 - A *Supervisor* that monitors the status of each step, to detect whether any steps have failed or timed out.
@@ -91,23 +91,20 @@ What is the right size for a microservice? "Not too big and not too small" &mdas
     - Boundaries *across* aggregates should be loosely coupled. 
     - An aggregate is a boundary of persistence.
 
-    Domain services and application services are also good candidates for microservices.
+    Domain services are also good candidates for microservices. Domain services are stateless operations across multiple aggregates. A typical example is a workflow that involves a few microservices. We'll see an example of this in the Drone Delivery application.
 
-4. Finally, consider non-functional requirements. Look at factors such as team size, data types, technologies used, scalability requirements, availability requirements, and security requirements. These factors may lead you to further decompose a microservice into two or more smaller services, or do the opposite and combine several microservices into one. 
+3. Finally, consider non-functional requirements. Look at factors such as team size, data types, technologies used, scalability requirements, availability requirements, and security requirements. These factors may lead you to further decompose a microservice into two or more smaller services, or do the opposite and combine several microservices into one. 
 
-    Here are some reasons to keep functionality within the same service: 
-    
-    - Communication overhead. If splitting functionality into two services causes them to be overly chatty, it may be a symptom that these functions belong in the same service. 
-    - Data consistency and integrity. Microservices maintain their own data stores, and sometimes it's important to maintain data consistency by putting functionality into a single service. That said, consider whether you really need strong consistency. There are strategies for addressing eventual consistency in a distributed system, and the benefits of decomposing 
-    
-    Here are some reasons to break up a service:
-    
-    - To keep team sizes small. A team for a single service should probably not be more than a dozen people (the "two-pizza rule").
-    - To enable faster release velocity.
-    - To limit dependencies.
-    - To use different technologies or data stores.
+4. Once you have identified the microservices in your application, validate your design against the following criteria.
 
-Above all, it's important to be pragmatic, and remember that domain-driven design is an iterative process. When in doubt, start with more coarse-grained microservices. It's easier to split apart a service later, than it is to refactor functionality across several services in production.
+    - Each service has a single responsibility.
+    - There are no chatty calls between services. If splitting functionality into two services causes them to be overly chatty, it may be a symptom that these functions belong in the same service.
+    - Each service is small enought that it can be built by a small team working independently. A team for a single service should probably not be more than a dozen people (the "two-pizza rule").
+    - You haven't created inter-dependencies that will require services to be deployed in lock-step. It should always be possible to deploy a service without redeploying any other services.
+    - Services are not tightly coupled, and can evolve independently.
+    - Your service boundaries will not create problems with data consistency or integrity. Microservices maintain their own data stores, and sometimes it's important to maintain data consistency by putting functionality into a single microservice. That said, consider whether you really need strong consistency. There are strategies for addressing eventual consistency in a distributed system, and the benefits of decomposing services often outweight the costs of eventual consistency.
+
+Above all, it's important to be pragmatic, and remember that domain-driven design is an iterative process. When in doubt, start with more coarse-grained microservices. Splitting a microservice into two smaller services is a easier than refactoring functionality across several existing microservices.
     
 ## Drone Delivery microservices
 
@@ -115,15 +112,19 @@ Recall that the development team had identified the following aggregates: Delive
 
 - Delivery and Package are obvious candidates for microservices. 
 
-- Drone and Account are interesting because they reside in external bounded contexts. One option is to create Drone and Account microservices that mediate between the Shipping bounded context and the external contexts. Another option is to call directly into those external contexts. The other bounded contexts are outside the scope of this guidance, so we'll treat Done and Account as "placeholders" whose implementation is yet to be determined.
+- The Scheduler and Supervisor are both stateless domain services. They need to coordinate other microservices, so it makes sense to implement them as separate microservices. 
 
-- The Scheduler and Supervisor are both domain services, so it makes sense to implement them as microservices. At this point in the design, it's not clear whether they should be split into separate microservices or kept together.
+- Drone and Account are interesting because they reside in external bounded contexts. Another option is to call directly into those external contexts. Another option is to create Drone and Account microservices that mediate between the Shipping bounded context and the other contexts. These microservices might expose APIs or data schemas that are more suited to the Shipping context. The other bounded contexts are beyond the scope of this guidance, so we'll treat Done and Account as "placeholders" whose implementation is yet to be determined. But here are some factors that you might consider in this situation:
 
-So far we've considered the aggregates and domain services, but haven't considered non-functional requirements. Thinking about the application's throughput requirements, the development team decides to create a separate Ingestion microservice that is responsible for ingesting client requests. This microservice will implement [load leveling](../patterns/queue-based-load-leveling.md) by putting incoming requests into a buffer for processing. The Scheduler will read the requests from the buffer and execute the workflow.
+    - What is the network overhead of calling directly into another bounded context? 
+    
+    - Is the data schema from the other context suitable for this context?
+     
+    - Will multiple services take a direct dependency on an external context? If so, you might want to create a mediator service that acts as an anti-corruption layer.
+     
+So far, we've haven't considered any non-functional requirements. Thinking about the application's throughput requirements, the development team decides to create a separate Ingestion microservice that is responsible for ingesting client requests. This microservice will implement [load leveling](../patterns/queue-based-load-leveling.md) by putting incoming requests into a buffer for processing. The Scheduler will read the requests from the buffer and execute the workflow.
 
 The following diagram shows the design at this point:
  
 ![](./images/microservices.png)
-
-
 
