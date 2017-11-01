@@ -36,9 +36,9 @@ Based on business requirements, the development team identified the following no
 
 The requirement to handle occasional spikes in traffic presents a design challenge. In theory, the system could be scaled out to handle the maximum expected traffic. However, provisioning that many resources woud be very inefficient. Most of the time, the application will not need that much capacity, so there would be idle cores and excess database resources, costing money without adding value.
 
-A better approach is to put the incoming requests into a buffer, and let the buffer act as a load leveler. With this design, the Delivery Scheduler must be able to the maximum ingestion rate of 100K requests/second over short periods, but the backend services only need to handle the maximum sustained load of 10K. By buffering at the front end, the backend services shouldn't need to handle large spikes in traffic.
+A better approach is to put the incoming requests into a buffer, and let the buffer act as a load leveler. With this design, the Ingestion service must be able to the maximum ingestion rate of 100K requests/second over short periods, but the backend services only need to handle the maximum sustained load of 10K. By buffering at the front end, the backend services shouldn't need to handle large spikes in traffic.
 
-At the scale the development team is targeting, Event Hubs is a good choice for load leveling, because of its high ingestion rate. Our tests showed that ingress per event hub was about 32k ops/sec with latency around 90ms. The delivery scheduler is also capable of sharding across more than one event hub. Ingress with 2 event hubs was 45k ops/sec with latency below 100 ms. (As with all performance metrics, there can be multiple factors that affect performance, so don't interpret these numbers as a benchmark.) Event Hubs also has cost benefits compared with other options.
+At the scale the development team is targeting, Event Hubs is a good choice for load leveling, because of its high ingestion rate. Our tests showed that ingress per event hub was about 32k ops/sec with latency around 90ms. (As with all performance metrics, there can be multiple factors that affect performance, so don't interpret these numbers as a benchmark.) If even more throughput is needed, the Ingestion service can shard across more than one event hub. Event Hubs also has cost benefits compared with other options.
 
 It's important to understand how Event Hubs can achieve such high throughput, because that affects how a client should consume messages from Event Hubs. Event Hubs does not implement a *queue*. Rather, it implements an *event stream*. 
 
@@ -82,16 +82,12 @@ In the drone application, a batch of messages can be processed in parallel. But 
 Akka Streams is also a very natural programming model for streaming events from Event Hubs. Instead of looping through a batch of events, you define a set of operations on events, and let Akka Streams handle the streaming. 
 
 IoTHub React uses a different checkpoint strategy than Event Host Processor. The checkpoint logic resides in a sink, which is the terminating stage in a pipeline. The design of Akka Streams allows the pipeline to continue streaming data while the sink is writing the checkpoint. That means the upstream processing stages don't need to wait on the checkpoint. You can configure chcekpoint to occur after a timeout or after a certain number of messages have been processed. 
- 
-Considerations for scaling:
 
-- To make it easier to scale out, each instance of the dispatcher service reads from a single partition. 
+We designed the Scheduler service so that each container instance reads from a single partition. The partition number is configured through an environment variable. To read from 32 partitions, we deploy the Scheduler service in 32 pods, and assign each pod to a different partition. That provides a lot of flexibility in placing the pods within the Kubernetes cluster. That way, the service can scale horizontally by adding additional nodes to the cluster, so that each node has fewer pods running. Our performance tests showed that the Scheduler service is memory- and thread-bound, so performance depended greatly on the VM size and the number of pods per node.
 
-- To scale the dispatcher has to be deployed as a statefulsets in kubernetes. Like Deployments, StatefulSets manage Pods that are based on an identical container spec. However, although their specs are the same, the Pods in a StatefulSet are not interchangeable. Each Pod has a persistent identifier that it maintains across any rescheduling. In the case of dispatcher the identifier for the container is the partition id that is assigned to each pod running the workflow. Each pod will execute the messages for its own partition. Pods can overlap on the VM giving a cost effective way to distribute workload in a high density model. This is easy to manage through image updates and deployment cycles. 
+If even higher scale is needed, it's possible to assign more than one pod to each partition. Remember that Event Hub consumers can read the same stream independently. However, each consumer will see all of the events. To avoid duplicate processing, use a hashing algorithm so that each instance will discard a portion of the messages. That way, multiple readers will consume the stream but only process the messages that belong to them according to the hashing algorithm.
 
-- Customers with higher scale requirements than the number of partitions in Event Hubs, can implement a hashing algorithm in the dispatcher and deploy more than one readers per partition pointing to different storage accounts. The result of this configuration is that multiple readers will pick up messages overlapping among them but will only process the messages that belong to them, according to their hashing algorithm.
-
-- Correct sizing of nodes and the right density of them in VMS is important aspect on the dispatcher deployment. The dispatcher is memory and thread bound, because of the akka framework. 
+In order to assign a partition to each pod, we took advantage of the StatefulSet resource type in Kubernetes. Pods in a StatefulSet are assigned a persistent identifier that includes a numeric index. Specifically, the pod name is `<statefulset name>-<index>`, and this value is available to the container through the Kubernetes [Downward API](https://kubernetes.io/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/). At run time, the Scheduler services reads the pod name and uses the pod index as the partition ID.
 
 ### Service Bus queues
 
@@ -119,7 +115,7 @@ There are three general classes of failure to consider.
 
 In the case of a transient failure, the Scheduler service should simply retry the operation. If the operation still fails after a certain number of attempts, it's considered a non-transient failure.  
  
-When a non-transient failure occurs, the entire business transaction must be marked as a failure. It may be necessary to undo other steps in the same transaction that already succeeded. 
+When a non-transient failure occurs, the entire business transaction must be marked as a failure. It may be necessary to undo other steps in the same transaction that already succeeded. (See Compensating Transactions, below.)
  
 If the Scheduler service itself crashes, Kubernetes will bring up a new instance. However, any transactions that were already in progress must be resumed. 
 
@@ -129,7 +125,9 @@ If a non-transient failure happens, the current transaction might be in a *parti
 
 It then becomes necessary to undo the steps that succeeded, using a [Compensating Transaction](../patterns/compensating-transaction.md). In some cases, this must be done by an external system or even by a manual process. Failures may trigger other actions as well, such as notifying the user by text or email, or sending an alert to an operations dashboard. 
 
-If the logic for compensating transactions is complex, consider creating a separate service that is responsible for this process. In the Drone Delivery application, the Scheduler service puts failed operations onto a dedicated queue, where they can be processed out of band. 
+If the logic for compensating transactions is complex, consider creating a separate service that is responsible for this process. In the Drone Delivery application, the Scheduler service puts failed operations onto a dedicated queue. A separate microservice, called the Supervisor, reads from this queue and calls a cancellation API on the services that need to compensate. This is a variation of the [Scheduler Agent Supervisor pattern][scheduler-agent-supervisor].
+
+![](./images/supervisor.png)
 
 ## Idempotent vs non-idempotent operations
 
@@ -142,4 +140,6 @@ If the Scheduler service crashes, it may be in the middle of processing one or m
 
 One approach is to design all operations to be idempotent. An operation is idempotent if it can be called multiple times without producing additional side-effects after the first call. In other words, a client can invoke the operation once, twice, or many times, and the result will be the same. Essentially, the service should ignore duplicate calls. The HTTP specification states that GET, PUT, and DELETE methods must be idempotent. POST methods are not guaranteed to be idempotent. In particular, if a POST method creates a new resource, there is generally no guarantee that this operation is idempotent. To make a method with side effects idempotent, the service must have a way to detect duplicate calls.
 
-Another option is to track the progress of every transaction in a durable store. Whenever a message is processed, look up the state in the durable store. The [Scheduler Agent Supervisor pattern](../patterns/scheduler-agent-supervisor.md) is one way to implement this approach. However, this approach adds complexity to the workflow logic.
+Another option is to track the progress of every transaction in a durable store. Whenever a message is processed, look up the state in the durable store. The [Scheduler Agent Supervisor pattern][scheduler-agent-supervisor] is one way to implement this approach, although it adds complexity to the workflow logic.
+
+[scheduler-agent-supervisor]: ../patterns/scheduler-agent-supervisor.md
