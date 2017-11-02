@@ -1,7 +1,7 @@
 - name: Azure Architecture Center
   href: ../index.md
 
-- name: Design microservices for Azure
+- name: Designing microservices on Azure
   items:
   - name: Introduction
     href: index.md

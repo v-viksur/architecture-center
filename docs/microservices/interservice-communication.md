@@ -1,12 +1,12 @@
 # Interservice communication
 
-When an application is decomposed into microservices, the problem arises of how one service should talk to another. In this section, we look at the tradeoffs between using asynchronous messaging between services versus calling APIs, and discuss some API design considerations. 
+When an application is decomposed into microservices, you need to figure out how one service talks to another. Interservice communtication is a key successful factor in microservices architecture. Communication between services must be efficient and robust. With lots of small services interacting to complete a single transaction, this can be a challenge. In this chapter, we look at the tradeoffs between asynchronous messaging versus synchronous APIs, as well as some API design considerations for microservices. 
 
 ![](./images/interservice-communication.png)
 
 ## Synchronous API or asynchronous messaging?
 
-There are two main ways that services can communicate with other services:
+There are two main ways that microservices can communicate with each other:
 
 - **Synchronously** by calling APIs on the service. 
 - **Asynchronously** by sending messages or events.   
@@ -14,10 +14,15 @@ There are two main ways that services can communicate with other services:
 There are tradeoffs to each approach. Calling an API is a simple, well-understood paradigm. You call a method, and get a response. However, using asynchronous messages has some advantages that can be very useful in a microservices architecture:
 
 - **Reduced coupling**. The message sender does not need to know about the consumer. 
+
 - **Multiple subscribers**. Using a pub/sub model, multiple consumers can subscribe to receive events. See [Event-driven architecture style](/azure/architecture/guide/architecture-styles/event-driven).
-- **Failure isolation**. If the consumer goes down, the sender can still continue to send messages. They will be picked up when the consumer recovers. Synchronous calls can create cascading failures. 
+
+- **Failure isolation**. If the consumer goes down, the sender can still continue to send messages. The messages will be picked up when the consumer recovers. This ability is especially useful in a microservices architecture, because each service has its own lifecycle. A service could become unavailable or be replaced with a newer version at any given time. Asynchrounous messaging can handle intermittent downtime. Synchronous APIs, on the other hand, require the downstream service to be available or the operation fails. 
+ 
 - **Asynchronous operations**. The message sender does not have to wait for the consumer to respond. This is especially useful in a microservices architecture. If there is a chain of service dependencies (service A calls B, which calls C, and so on), waiting on synchronous calls can add unacceptable amounts of latency.
-- **Load leveling**. A queue can act as a buffer to level the workload. 
+
+- **Load leveling**. A queue can act as a buffer to level the workload, so that receivers can process messages at their own rate. 
+
 - **Workflows**. Queues can be used to manage a workflow, by check-pointing the message after each step in the workflow.
 
 However, there are also some challenges to using asychronous messaging effectively.
@@ -26,8 +31,8 @@ However, there are also some challenges to using asychronous messaging effective
 - End-to-end latency may be higher. 
 - The messaging infrastructure incurs additional cost. At high throughputs, the cost could become significant.
 - Handling asynchronous messaging is not a trivial task. For example, you must handle duplicated messages, either by de-duplicating or by making operations idempotent. 
-- Asynchronous messages don't work well for request-response semantics. 
-- If the messages require *queue semantics*, the queue can become a bottleneck in the system. Each message requires at least one queue oepration and one dequeue operation. Moreoever, queue semantics generally require some kind of locking inside the messaging infrastructure. If the queue is a managed service, there may be additional latency, because the queue is external to the cluster’s virtual network. You can mitigate these issues by batching messages, but that complicates the code. If the messages don't require queue semantics, you might be able to use an event *stream* instead of a queue. For more information, see [Event-driven architectural style](../guide/architecture-styles/event-driven.md).  
+- Asynchronous messages don't work well for request-response semantics. To send a response, you need another queue, plus a way to correlate request and response messages by message ID.
+- If messages require *queue semantics*, the queue can become a bottleneck in the system. Each message requires at least one queue oepration and one dequeue operation. Moreoever, queue semantics generally require some kind of locking inside the messaging infrastructure. If the queue is a managed service, there may be additional latency, because the queue is external to the cluster’s virtual network. You can mitigate these issues by batching messages, but that complicates the code. If the messages don't require queue semantics, you might be able to use an event *stream* instead of a queue. For more information, see [Event-driven architectural style](../guide/architecture-styles/event-driven.md).  
 
 ## Communication patterns in the Drone Delivery application
 
@@ -46,23 +51,23 @@ Notice that delivery events are derived from drone events. For example, when a d
 
 ## Challenges and considerations
 
-Retry
+Service meshes, described in the next section, are designed to handle some of these challenges.
 
-Circuit breaker
+**Retries**. A network call might fail due to a transient fault that is self-correcting. Rather than fail outright, the caller should typically retry the operation a certain number of times, or until a configured time-out period elapses. See [Retry pattern](../patterns/retry.md)
 
-Throttling
+**Circuit breaker**. Too many failed requests can cause a bottleneck, as pending requests accumulate in the queue. These blocked requests might hold critical system resources such as memory, threads, database connections, and so on, which can cause cascading failures. The [Circuit Breaker pattern](../patterns/circuit-breaker.md) can prevent a service from repeatedly trying an operation that is likely to fail. 
 
-Service versioning 
+Service versioning. 
 
-load balancing
+Load balancing.
 
-Access control (s-to-s authentication)
+Access control (service-to-service authentication).
 
-TLS encryption
+TLS encryption.
 
-Protocol conversion?
+Protocol conversion.
 
-Distributed tracing 
+Distributed tracing.
 
 
 ## Service mesh

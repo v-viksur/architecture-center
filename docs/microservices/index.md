@@ -78,8 +78,12 @@ For our Drone Delivery reference implementation, we are using ACS with Kubernete
 
 Options for using an orchestrator in Azure include:
 
-- Azure Container Service (ACS). ACS lets quickly deploy a production ready Kubernetes, DC/OS, or Docker Swarm cluster.
+- Azure Container Service (ACS). ACS is an SLA-backed Azure service that lets you deploy a production-ready Kubernetes, DC/OS, or Docker Swarm cluster.
+- [ACS Engine][acs-engine] is an open-source tool that generates Azure Resource Manager (RM) templates for Kubernetes, DC/OS, or Docker Swarm clusters. Unlike ACS, ACS Engine is not a hosted Azure service, and does not offer an SLA. However, it enables some advanced configuration options that are not currently available in ACS. For more information, see [Container Service frequently asked questions][acs-faq].
 - AKS (Azure Container Service). AKS is a managed Kubernetes service. AKS provisions Kubernetes and exposes the Kubernetes API endpoints, but hosts and manages the Kubernetes control plane, performing automated upgrades, automated patching, autoscaling, and other management tasks. You can think of AKS as being "Kubernetes APIs as a service." At the time of writing, AKS is still in preview. However, it's expected that AKS will become the preferred way to run Kubernetes in Azure.
 - Service Fabric. Orchestrates services that can run as containers, binary executables, or as Reliable Services. Reliable Services is a light-weight framework for writing services that integrate with the Service Fabric platform.
 
 To create a serverless architecture on Azure, use Azure Functions combined with Event Grid.
+
+[acs-engine]: https://github.com/Azure/acs-engine
+[acs-faq]: /azure/container-service/dcos-swarm/container-service-faq

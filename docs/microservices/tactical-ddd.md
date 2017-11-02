@@ -82,18 +82,16 @@ What is the right size for a microservice? "Not too big and not too small" &mdas
 
 1. Start with a bounded context. In general, the functionality in a microservice shouldn't span more than one bounded context. By definition, a bounded context marks the boundary of a particular domain model. If you find that a microservice needs to mix different domain models together, that's an indicator that you may need to go back and refine your domain analysis.
 
-2. Next, look at the aggregates in your domain model. There should be one or more aggregates that have substantial domain logic. (If not, you may need to revisit your domain model.) These aggregates are candidates for microservices. 
-
-    A well-designed aggregate exhibits many of the characteristics of a well-designed microservice:
+2. Next, look at the aggregates in your domain model. There should be one or more aggregates that have substantial domain logic. (If not, you may need to revisit your domain model.) These aggregates are candidates for microservices. A well-designed aggregate exhibits many of the characteristics of a well-designed microservice:
 
     - Aggregates are derived from business requirements, rather than technical concerns such as "data access" or "messaging".  
     - An aggregate should have high functional cohesion.
     - Boundaries *across* aggregates should be loosely coupled. 
     - An aggregate is a boundary of persistence.
 
-    Domain services are also good candidates for microservices. Domain services are stateless operations across multiple aggregates. A typical example is a workflow that involves a few microservices. We'll see an example of this in the Drone Delivery application.
+3. Domain services are also good candidates for microservices. Domain services are stateless operations across multiple aggregates. A typical example is a workflow that involves several microservices, so the system needs something that coordinates the workflow. We'll see an example of this in the Drone Delivery application.
 
-3. Finally, consider non-functional requirements. Look at factors such as team size, data types, technologies used, scalability requirements, availability requirements, and security requirements. These factors may lead you to further decompose a microservice into two or more smaller services, or do the opposite and combine several microservices into one. 
+4. Finally, consider non-functional requirements. Look at factors such as team size, data types, technologies used, scalability requirements, availability requirements, and security requirements. These factors may lead you to further decompose a microservice into two or more smaller services, or do the opposite and combine several microservices into one. 
 
 4. Once you have identified the microservices in your application, validate your design against the following criteria.
 
