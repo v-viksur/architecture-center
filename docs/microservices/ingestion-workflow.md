@@ -1,8 +1,6 @@
 # Ingestion and workflow
 
-In this section, we describe how the Drone Delivery application handles incoming client requests. The application must ingesting the requests at high volume and also manage a workflow for each request. 
-
-Because each microservice handles a single responsibility, it's common to have a workflow that spans multiple services for a single transaction. The workflow must be reliable; it can't lost transactions or leave transactions in a partially completed state. Managing ingestion is also very important in a microservices architecture. Because there are many small services that communicate with each other, you need to control the rate of incoming requests. Otherwise, they can overwhelm the inter-service communication. 
+Microservices often have a workflow that spans multiple services for a single transaction. The workflow must be reliable; it can't lose transactions or leave them in a partially completed state. It's also critical to control the ingestion rate of incoming requests. With many small services communicating with each other, a burst of incoming requests can overwhelm the inter-service communication. 
 
 ![](./images/ingestion-workflow.png)
 

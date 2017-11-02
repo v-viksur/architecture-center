@@ -1,17 +1,14 @@
 # Interservice communication
 
-When an application is decomposed into microservices, you need to figure out how one service talks to another. Interservice communtication is a key successful factor in microservices architecture. Communication between services must be efficient and robust. With lots of small services interacting to complete a single transaction, this can be a challenge. In this chapter, we look at the tradeoffs between asynchronous messaging versus synchronous APIs, as well as some API design considerations for microservices. 
+Communication between microservices must be efficient and robust. With lots of small services interacting to complete a single transaction, this can be a challenge. In this chapter, we look at the tradeoffs between asynchronous messaging versus synchronous APIs, as well as some API design considerations for microservices. 
 
 ![](./images/interservice-communication.png)
 
 ## Synchronous API or asynchronous messaging?
 
-There are two main ways that microservices can communicate with each other:
+There are two main ways that microservices can communicate with each other. Either synchronously, by calling an API on the service, or asynchronously, by sending messages or events.   
 
-- **Synchronously** by calling APIs on the service. 
-- **Asynchronously** by sending messages or events.   
-
-There are tradeoffs to each approach. Calling an API is a simple, well-understood paradigm. You call a method, and get a response. However, using asynchronous messages has some advantages that can be very useful in a microservices architecture:
+There are tradeoffs to each approach. Calling an API is a simple, well-understood paradigm. You call a method, and get a response. However, using asynchronous messages has some advantages that can be very useful in a microservices architecture, including:
 
 - **Reduced coupling**. The message sender does not need to know about the consumer. 
 
