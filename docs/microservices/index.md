@@ -83,7 +83,10 @@ Options for using an orchestrator in Azure include:
 - AKS (Azure Container Service). AKS is a managed Kubernetes service. AKS provisions Kubernetes and exposes the Kubernetes API endpoints, but hosts and manages the Kubernetes control plane, performing automated upgrades, automated patching, autoscaling, and other management tasks. You can think of AKS as being "Kubernetes APIs as a service." At the time of writing, AKS is still in preview. However, it's expected that AKS will become the preferred way to run Kubernetes in Azure.
 - Service Fabric. Orchestrates services that can run as containers, binary executables, or as Reliable Services. Reliable Services is a light-weight framework for writing services that integrate with the Service Fabric platform.
 
-To create a serverless architecture on Azure, use Azure Functions combined with Event Grid.
+For a serverless architecture, [Azure Functions][functions] is a serverless compute service. Azure Functions supports a variety of triggers. For example, a function could be triggered by an HTTP request, or by a message in a Service Bus queue, or by an event delivered to Event Hubs. (For a complete list, see [Azure Functions triggers and bindings concepts][functions-triggers].) Also consider [Azure Event Grid][event-grid], which is a managed event routing service in Azure.
 
 [acs-engine]: https://github.com/Azure/acs-engine
 [acs-faq]: /azure/container-service/dcos-swarm/container-service-faq
+[event-grid]: /azure/event-grid/
+[functions]: /azure/azure-functions/functions-overview
+[functions-triggers]: /azure/azure-functions/functions-triggers-bindings

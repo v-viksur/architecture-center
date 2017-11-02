@@ -38,35 +38,72 @@ With these considerations in mind, the development team made the following desig
 ![](./images/communication.svg)
 
 - The Delivery Scheduler service exposes a public API. Client applications use this API to schedule, update, or cancel deliveries.
+
 - The backend services (Accounts, Delivery, Package, and Drone Management) expose internal APIs. The Delivery Scheduler service calls these to create or update a delivery request. One reason to use APIs here is that the Delivery Scheduler service requires a response from the downstream services. A failure in any of the downstream services means the entire operation failed. A potential issue is the amount of latency that is introduced by calling the backend services. Later, we'll discuss the workflow in more detail. 
+
 - The Delivery service also exposes some public APIs that are used by clients to get the status of a delivery and to request delivery notification via text or email. Later, we'll see that a gateway can be used to isolate clients from needing to know which service exposes a particular API. 
+
 - While a drone is in flight, the Drone Management service sends events about the drone's current location and status. 
+
 - The Delivery service sends events that describe the status of a delivery, including Created, Rescheduled, InTransit, and DeliveryComplete. Events make it possible for any interested service to subscribe to status updates. In the current design, the Delivery Service is the only subscriber, but it's possible that other services might need to consume these events. For example, they might be used for a dashboard or real-time analytics service. Another reason to use events is that it removes the consumers from the workflow path, meaning the Delivery Scheduler does not have to wait on them.
+
 - The Delivery History service subscribes to the delivery events and stores the history of every delivery. 
 
 Notice that delivery events are derived from drone events. For example, when a drone reaches a delivery location and drops off a package, the Delivery service translates this into a DeliveryCompleted event. This is an example of thinking in terms of domain models. As described earlier, Drone Management belongs in a separate bounded context. The drone events convey the physical location of a drone. The delivery events, on the other hand, represent changes in the status of a delivery, which is a different business entity.
 
 ## Challenges and considerations
 
+
+
 Service meshes, described in the next section, are designed to handle some of these challenges.
 
-**Retries**. A network call might fail due to a transient fault that is self-correcting. Rather than fail outright, the caller should typically retry the operation a certain number of times, or until a configured time-out period elapses. See [Retry pattern](../patterns/retry.md)
+**Retries**. A network call might fail due to a transient fault that is self-correcting. Rather than fail outright, the caller should typically [retry](../patterns/retry.md) the operation a certain number of times, or until a configured time-out period elapses. 
 
 **Circuit breaker**. Too many failed requests can cause a bottleneck, as pending requests accumulate in the queue. These blocked requests might hold critical system resources such as memory, threads, database connections, and so on, which can cause cascading failures. The [Circuit Breaker pattern](../patterns/circuit-breaker.md) can prevent a service from repeatedly trying an operation that is likely to fail. 
 
-Service versioning. 
+**Service versioning**. When a team deploys a new version of a service, they must avoid breaking any other services or external clients that depend on it. In addition, you might want to run multiple versions of a service side-by-side, and route requests to a particular version. 
 
-Load balancing.
+**Load balancing**. Generally, you will run more than one instance of a microservice, for availability and scalability. So if service "A" calls service "B", the request must be directed to a particular instance of service "B". In Kubernetes, the `Service` resource type provides a stable IP address for a group of pods. Network traffic to the service's IP address gets forwarded to a pod by means of iptable rules. By default, a random pod is chosen. A service mesh can provide more intelligent load balancing algorithms based on observed latency or other metrics. 
 
-Access control (service-to-service authentication).
+**TLS encryption and mutual TLS authentication**. For security reasons, you may want to encrypt traffic between services with TLS, and use mutual TLS authentication to authenticate callers.
 
-TLS encryption.
-
-Protocol conversion.
-
-Distributed tracing.
+**Distributed tracing**. 
 
 
-## Service mesh
+## How a service mesh can address these challenges
 
-TBD
+A *service mesh* 
+
+Service mesh moves shared functionality out of services in a generalized communication layer. 
+
+
+linkerd
+
+Load balancing at the session level, based on observed latencies or queue size (number of outstanding requests)
+
+Layer-7 routing based on URL paths
+
+Rety of failed requests. Service mesh understands 2xx, 4xx, 5xx HTTP error codes. Only if the request is known to be idempotent. Retry budget - Percentage of requests that the service mesh will retry. Timeouts to bound the maximum latency. Backoff algorithm (constant time or jitter - jitter avoids the problem where a number of requests fail at about the same time, and then the same backoff interval is applied to all of the requests, so the retries also happen at about the same time. Adding jitter distributes the retries around a random distribution)  <!-- https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/ -- >
+
+Circuit breaking - If an instance consistently fails requests, the service mesh will temporarily mark it as unavailable. After a backoff period, it will try the instance again. You can configure it based on percentage of failed requests, number of consecutive failures,  
+
+Service mesh captures metrics and enables distributed tracing. 
+
+Mutual TLS Authentication for service-to-service calls.
+
+Distributed tracing - capture latency, retry, and errors for each hop in a request, which can be exported via Zipkin 
+
+Capture metrics for latency, error rates, load balancing statistics. These can be collected by Prometheus
+
+Istio:
+
+Automatic load balancing for HTTP, gRPC, and TCP traffic
+
+Advanced routing rules - route based on version or environment (staging, production)
+
+Fault injection
+
+Active health check
+
+
+
