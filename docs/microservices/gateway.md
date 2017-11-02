@@ -1,6 +1,8 @@
 # Implement an API gateway for microservices
 
-An API gateway sits between clients and services, routing requests from clients to the right services. It may also perform various cross-cutting tasks such as monitoring, authentication, and SSL termination. This section describes some of reasons to use an API gateway, and considerations for implementing one.
+When there are many backend services, how does a client know where they're located and how to reach them? What happens when new services are created, or an existing service is modified? 
+
+An API gateway sits between clients and services, routing requests from clients to the right services. Gateways can also perform various cross-cutting tasks such as authentication, SSL termination, and rate limiting, that would otherwise need to be implemented inside each public-facing microservice. 
 
 ![](./images/gateway.png)
 
@@ -40,9 +42,9 @@ Some of the options for implementing gateway functionality include:
 
 - [Azure API Management](/azure/api-management/). API Management is a turnkey solution for publishing APIs to external and internal customers. It provides features that are useful for managing a public-facing API, including rate limiting, IP white listing, and authentication using Azure Active Directory or other identity providers. 
 
-- Reverse proxy server, such as Nginx or HAProxy. Nginx and HAProxy are popular reverse proxy servers that support features such as load balancing, SSL, and layer 7 routing. They are both free, open-source products, with paid editions that provide additional features and support options. Nginx and HAProxy are both mature products with rich feature sets and high performance. You can extend them with third-party modules or by writing custom scripts in Lua. Nginx also supports a JavaScript-based scripting module called NginScript.
+- **Reverse proxy server**. Nginx and HAProxy are popular reverse proxy servers that support features such as load balancing, SSL, and layer 7 routing. They are both free, open-source products, with paid editions that provide additional features and support options. Nginx and HAProxy are both mature products with rich feature sets and high performance. You can extend them with third-party modules or by writing custom scripts in Lua. Nginx also supports a JavaScript-based scripting module called NginScript.
 
-- Service mesh. If you are using a service mesh such as linkerd or Istio, consider the features that are provided by the ingress controller for that service mesh. For example, the Istio ingress controller supports layer 7 routing, HTTP redirects, retries, and other features.
+- **Service mesh ingress controller**. If you are using a service mesh such as linkerd or Istio, consider the features that are provided by the ingress controller for that service mesh. For example, the Istio ingress controller supports layer 7 routing, HTTP redirects, retries, and other features.
 
 When choosing a gateway technology, consider the following:
 
@@ -50,31 +52,23 @@ When choosing a gateway technology, consider the following:
 
 **Deployment**. Azure Application Gateway and API Management are managed services. Nginx and HAProxy will typically run in containers inside the cluster, but can also be deployed to dedicated VMs outside of the cluster. 
 
-**Management**. When services are updated or new services are added, the gateway routing rules may need to be updated. Consider how this process will be managed. Similarly considerations apply to managing SSL certificates, IP whitelists, and other aspects of configuration.
+**Management**. When services are updated or new services are added, the gateway routing rules may need to be updated. Consider how this process will be managed. Similar considerations apply to managing SSL certificates, IP whitelists, and other aspects of configuration.
+
+Depending on the features that you need, you might deploy more than one gateway. For example, you might use Azure API Management for its integration with Azure AD, and also deploy Nginx for layer-7 routing and load balancing.
 
 ## Deployment considerations
 
 ### Deploying Nginx or HAProxy to Kubernetes
 
-You can deploy Nginx or HAProxy to Kubernetes by creating a ReplicaSet or DaemonSet that specifies the Nginx or HAProxy container image. 
-
-- To achieve high availability, set the replica count higher than 1 for redundacy. The gateway is a potential bottleneck or single point of failure in the system, so it's crucial that the gateway be scalable and high available.
-
-- Create a service of type LoadBalancer to expose the gateway through an Azure Load Balancer
-
-- Use a ConfigMap to store the configuration file for the proxy, and mount the ConfigMap as a volume. 
+You can deploy Nginx or HAProxy to Kubernetes as a ReplicaSet or DaemonSet that specifies the Nginx or HAProxy container image. Use a ConfigMap to store the configuration file for the proxy, and mount the ConfigMap as a volume. Create a service of type LoadBalancer to expose the gateway through an Azure Load Balancer. 
 
 <!-- - Configure a readiness probe that serves a static file from the gateway (rather than routing to another service). -->
 
-Another alternative is to use an **Ingress Controller**. This lets you configure the reverse proxy as a Kubernetes resource. An Ingress Controller actually involves two separate Kubernetes resources, the *Ingress* and the *Ingress Controller*.
+An alternative is create an Ingress Controller. An Ingress Controller is a Kubernetes resource that deploys a load balancer or reverse proxy server. Several implementations exist, including Nginx and HAProxy. A separate resource called an Ingress defines settings for the Ingress Controller, such as routing rules and TLS certificates. That way, you don't need to manage complex configuration files that are specific to a particular proxy server technology. Ingress Controllers are still a beta feature of Kubernetes at the time of this writing, and the feature will continue to evolve.
 
-- The Ingress is a resource that defines the configuration for the reverse proxy, such as routing rules, TLS certificates, and...
+The gateway is a potential bottleneck or single point of failure in the system, so always deploy at least two replicas for high availability. You may need to scale out the replicas further, depending on the load. 
 
-- The Ingress Controller performs the reverse proxying. Several implementations exist, including Nginx and HAProxy. The Ingress Controller watches the Ingress resource and updates the reverse proxy as needed.
-
-An advantage of using an Ingress Controller is that it abstracts the ingress rules from the implementation details of the reverse proxy. You don't need to manage configuration files or container images. Ingress Controllers are still a beta feature of Kubernetes at the time of this writing, and the feature will continue to evolve.
-
-Consider running the gateway on a dedicated set of nodes in the cluster. Benefits to this approach include:
+Also consider running the gateway on a dedicated set of nodes in the cluster. Benefits to this approach include:
 
 - Isolation. All inbound traffic goes to a fixed set of nodes, which can be isolated from backend services.
 

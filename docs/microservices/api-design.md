@@ -1,6 +1,8 @@
 # API design for microservices
 
-When you design APIs for a microservice, it's important to distinguish between two types of API:
+Good API design is important in a microservices architecture, because every service manages its own data, which means that data exchange happens either through messages or through API calls. APIs must be efficient, to avoid creating [chatty I/O](../antipatterns/chatty-io/index.md). Because services are designed by teams working independently, APIs must have well-defined semantics and versioning schemes, so that updates don't break other services.
+
+It's important to distinguish between two types of API:
 
 - A public API that client applications call. 
 - Backend APIs that are used for interservice communication.
@@ -21,53 +23,51 @@ In some cases, you can mix and match options. For example, by default gRPC uses 
 
 ## Considerations
 
-- Tradeoffs between a REST-style interface or an RPC-style interface.
+Here are some things to think about when choosing how to implement an API.
+
+- Consider the tradeoffs between using a REST-style interface versus an RPC-style interface.
+
+    - REST models resources, which can be a natural way express your domain model. It defines a uniform interface based on HTTP verbs, which encourages evolvability. It has well-defined semantics in terms of idempotency, side effects, and response codes. And it enforces stateless communication, which improves scalability. 
+
+    - RPC is more oriented around operations or commands. Because RPC interfaces look like local method calls, it may lead you to design overly chatty APIs. However, that doesn't mean RPC must be chatty. It just means you need to use care when designing the interface.
+
 - Does the serialization format require a fixed schema? If so, do you need to compile a schema file?
-- Framework and language support. HTTP is supported in nearly every framework and language. gRPC, Avro, and Thrift all have libraries for C++, C#, Java, and Python. Thrift and gRPC also support Go. 
-- Tooling for generating client code, serializer code, API documentation, etc. 
-- Serialization efficiency in terms of speed, memory, and payload size.
--  If you are using a service mesh, is the protocol compatible? For example, linkerd has built-in support for gRPC.
-- How will you version the APIs and data schemas?
-- If you choose a protocol like gRPC, you may need a protocol translation layer between the public API and the back end. A gateway can perform that function.
 
-Our recommendation is to choose REST over HTTP as a baseline, unless you need the performance of a binary protocol. REST over HTTP requires no special libraries. It creates minimal coupling, because callers don't need a client stub to communicate with the service. Finally, it's compatible with browser clients, so you don’t need a protocol translation layer between the client and the backend. However, if you choose this option, you should do performance and load testing early in the development process, to validate whether it performs well enough for your scenario.
+- Consider framework and language support. HTTP is supported in nearly every framework and language. gRPC, Avro, and Thrift all have libraries for C++, C#, Java, and Python. Thrift and gRPC also support Go. 
 
-## Designing RESTful APIs
+- Look at the available tooling for generating client code, serializer code, and API documentation. For REST APIs, consider using OpenAPI (Swagger) to create API definitions. 
 
-- Promotes loose coupling between client and server.
-- Enforces stateless communication, which improves scalability.
-- Defines a uniform interface based on HTTP verbs, which encourages evolvability.
+- Efficiency in terms of speed, memory, and payload size. Typically a gRPC-based interface is faster than REST over HTTP.
+ 
+- If you are using a service mesh, what protocols are compatible with it? For example, linkerd has built-in support for HTTP, Thrift, and gRPC. 
 
-(See [Representational State Transfer (REST)](http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm) in *Architectural Styles and the Design of Network-based Software Architectures* by Roy Fielding)
+- How will you version the APIs and data schemas? For recommendations on REST API versioning, see [Versioning a RESTful web API](../best-practices/api-design.md#versioning-a-restful-web-api).
 
-In addition, we've seen how making an API resource-oriented maps well to the tactical DDD patterns of aggegates, entities, and value objects. See [Apply tactical DDD concepts](./tactical-ddd.md)
+- Do you need protocol translation? If you choose a protocol like gRPC, you may need a protocol translation layer between the public API and the back end. A [gateway](./gateway.md) can perform that function.
 
-At this point, the principles of REST over HTTP are well-defined. You may find the following topics useful:
+Our baseline recommendation is to choose REST over API unless you need the performance benefits of a binary protocol. REST over HTTP requires no special libraries. It creates minimal coupling, because callers don't need a client stub to communicate with the service. There is rich toolset around REST and HTTP, for schema definition, testing, and monitoring. Finally, HTTP is compatible with browser clients, so you don’t need a protocol translation layer between the client and the backend. 
 
-[API design](../best-practices/api-design.md) describes general best practices for designing and versioning a REST API. 
-[API implementation](../best-practices/api-implementation.md) gives specific recommendations for implementing the API. 
+However, if you choose REST over HTTP, you should do performance and load testing early in the development process, to validate whether it performs well enough for your scenario.
 
+## API design considerations
 
-### Asynchronous operations
+There are many resources for designing RESTful APIs. Here are some that you might find helpful:
 
-### Throttling
+- [API design](../best-practices/api-design.md) 
 
-### Resource conflicts
+- [API implementation](../best-practices/api-implementation.md) 
 
-### Versioning
+- [Microsoft REST API Guidelines](https://github.com/Microsoft/api-guidelines)
 
-### OpenAPI documents
+Here are some specific considerations to keep in mind.
 
-<!-- 
-•	Give a few examples of best practices (action, error-code, async etc.)
-•	Describe some key design decisions (handling Async requests, return 202)
-•	Use query string for versioning because our URLs are expected to be stable
-•	Use OpenAPI spec to authorize user access
-•	Provide OpenAPI (Swagger) document for clients. Please refer to Benefit -> Easy Consumption from here https://pnp.visualstudio.com/_git/DroneDelivery?path=%2FREADME.md&version=GBfeature%2F5842_Delivery_Service_Messaging_choices&_a=preview
-•	HATEOAS?
--->
+- Different types of client, such as mobile application and desktop web browser, may requires different payload sizes or interaction patterns. Consider using the [Backends for Frontends pattern](../patterns/backends-for-frontends.md) to create separate backends for each client, that expose an optimal interface for that client.
 
-## Mapping DDD patterns to REST
+- For operations with side effects, consider making them idempotent and implementing them as PUT methods. That will enable safe retries and can improve resiliency. The chapters [Ingestion and workflow](./ingestion-workflow.md#idempotent-vs-non-idempotent-operations) and [Interservice communication](./interservice-communication.md) discuss this issue in more detail.
+
+- HTTP methods can have asynchronous semantics, where the method returns a response immediately, but the service carries out the operation asynchronously. The method should return an HTTP 202 response code in that case.
+
+## Mapping REST to DDD patterrns
 
 Patterns such as entity, aggregate, and value object are designed to place certain constraints on the objects in your domain model. For example, value objects are immutable. In many discussions of DDD, the patterns are modeled using OO language concepts like constructors or property getters and setters. 
 
@@ -77,9 +77,8 @@ For example, here is a TypeScript implementation of a value object. The properti
 export class Location {
     readonly latitude: number;
     readonly longitude: number;
-    readonly altitude: number;
 
-    constructor(latitude: number, longitude: number, altitude: number) {
+    constructor(latitude: number, longitude: number) {
         if (latitude < -90 || latitude > 90) {
             throw new RangeError('latitude must be between -90 and 90');
         }
@@ -88,7 +87,6 @@ export class Location {
         }
         this.latitude = latitude;
         this.longitude = longitude;
-        this.altitude = altitude;
     }
 }
 ```
@@ -105,32 +103,22 @@ But in a microservices architecture, services don't share a code base and don't 
 
 As a result, code has a smaller surface area. If the Drone Management service defines a Location class, the scope of that class is limited to the service, making its easier to validate the correct usage. If another service needs to update the drone location, it has to go through the Drone Management service API.
 
-It turns out that RESTful APIs can model many of the tactical DDD concepts.
+In this guidance, we focus less on OO coding principles, and put more emphasis on API design. But it turns out that RESTful APIs can model many of the tactical DDD concepts.
 
-- Business logic is encapsulated in the API, so the internal state of an aggregate is always consistent. Don't expose APIs that allow clients to manipulate internal state in an inconsistent way. Favor coarse-grained APIs that expose aggregates as resources.
+- RESTful APIs model *resources*, which map naturally to aggregates. Aggegates are consistency boundaries. Operations on aggregates should never leave an aggregate in an inconsistent states.  Instead of creating APIs allow a client to manipulate the internal state of an aggregate, favor coarse-grained APIs that expose aggregates as resources.
 
 - Aggregates are addressable by ID. Aggregates correspond to resources, and the URL is the stable identifier.
 
-    ```    
-    /api/orders/{id}
-    ```
-    
-- Child entities can be navigated from the root, or via links in the representation (following HATEOS principles)
-
-    ```    
-    /api/orders/{id}/items/{order_item_id}
-    ```    
+- Child entities can be reached at a unique URL. Following HATEOS principles, this can be conveyed through links in the representation of the parent entity.
 
 - Value objects are updated by replacing the entire value through a PUT or PATCH request.
 
-    ```    
-    PUT /api/customer/{id}/address
-    ```    
+- A collection resource can act like a repository.
 
-- A collection can act like a repository.
+| DDD concept | REST equivalent | Example | 
+|-------------|-----------------|---------|
+| Aggregate ID | URL | `/deliveries/{id}` |
+| Child entities | URL and links | `/deliveries/{id}/packages/{packageId}` |
+| Update value objects | PUT or PATCH | `PUT /deliveries/{id}/dropoff` |
+| Repository | Collection | `/deliveries?status=pending` |
 
-    ```    
-    /api/users/{id}/orders/
-    ```
-
-In this guidance, we focus less on OO coding principles, and put more emphasis on API design.

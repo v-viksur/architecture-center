@@ -32,11 +32,11 @@ Based on business requirements, the development team identified the following no
 - Handle spikes of up to 100K/sec without dropping client requests or timing out.
 - Less than 500ms latency in the 99th percentile.
 
-The requirement to handle occasional spikes in traffic presents a design challenge. In theory, the system could be scaled out to handle the maximum expected traffic. However, provisioning that many resources woud be very inefficient. Most of the time, the application will not need that much capacity, so there would be idle cores and excess database resources, costing money without adding value.
+The requirement to handle occasional spikes in traffic presents a design challenge. In theory, the system could be scaled out to handle the maximum expected traffic. However, provisioning that many resources woud be very inefficient. Most of the time, the application will not need that much capacity, so there would be idle cores, costing money without adding value.
 
 A better approach is to put the incoming requests into a buffer, and let the buffer act as a load leveler. With this design, the Ingestion service must be able to the maximum ingestion rate of 100K requests/second over short periods, but the backend services only need to handle the maximum sustained load of 10K. By buffering at the front end, the backend services shouldn't need to handle large spikes in traffic.
 
-At the scale the development team is targeting, Event Hubs is a good choice for load leveling, because of its high ingestion rate. Our tests showed that ingress per event hub was about 32k ops/sec with latency around 90ms. (As with all performance metrics, there can be multiple factors that affect performance, so don't interpret these numbers as a benchmark.) If even more throughput is needed, the Ingestion service can shard across more than one event hub. Event Hubs also has cost benefits compared with other options.
+At the scale required for the Drone Delivery application, Event Hubs is a good choice for load leveling. It offers low latency and high throughput. Event Hubs also has cost benefits compared with other options. For our testing, we used a Standard tier event hub with 32 partitions and 100 throughput units. We observed about 32K events / second ingestion, with latency around 90ms. Note that the default limit is 20 throughput units. Azure customers can request additional throughput units by filing a support request. See [Event Hubs quotas](/azure/event-hubs/event-hubs-quotas) for more information. As with all performance metrics, many factors can affect performance, such as message payload size, so don't interpret these numbers as a benchmark. If more throughput is needed, the Ingestion service can shard across more than one event hub. For even higher throughput rates, [Event Hubs Dedicated](/azure/event-hubs/event-hubs-dedicated-overview) offers single-tenant deployments that can ingress over 2 million events per second.
 
 It's important to understand how Event Hubs can achieve such high throughput, because that affects how a client should consume messages from Event Hubs. Event Hubs does not implement a *queue*. Rather, it implements an *event stream*. 
 
@@ -46,7 +46,7 @@ With a queue, an individual consumer can remove a message from the queue, and th
 
 Event Hubs, on the other hand, uses streaming semantics. Consumers read the stream independently at their own pace. Each consumer must keep track of its current position in the stream, using a client-side cursor. 
 
-For resiliency, the consumer should record its position by writing the latest offset to a persistent store at some predefined interval. This process is called checkpointing. If the consumer fails, another instance can pick up from the last checkpoint. In that case, some events may be replayed, depending on when the last checkpoint was saved. There is a tradeoff: Frequent checkpoints are slower, but sparse checkpoints mean you will replay more events after a failure. If you don't checkpoint, it's possible to lose messages if a node fails. For some scenarios, you may be able to tolerate some message loss. But in the case of the Delivery Scheduler, each message represents a customer trying to use the drone service, so it's important to avoid lost messages.
+For resiliency, the consumer should record its position by writing the latest offset to a persistent store at some predefined interval. This process is called checkpointing. If the consumer fails, another instance can pick up from the last checkpoint. In that case, some events may be replayed, depending on when the last checkpoint was saved. There is a tradeoff: Frequent checkpoints are slower, but sparse checkpoints mean you will replay more events after a failure. 
 
 ![](./images/stream-semantics.png)
  
@@ -129,7 +129,7 @@ If the logic for compensating transactions is complex, consider creating a separ
 
 ## Idempotent vs non-idempotent operations
 
-In order not to lose any requests, the ingestion service must guarantee that all messages are processed at least once.
+In order not to lose any requests, the Scheduler service must guarantee that all messages are processed at least once.
 
 - Service Bus Queues can guarantee at-least-once delivery by using PeekLock mode.
 - Event Hubs can guarantee at-least-once delivery if the client checkpoints correctly.

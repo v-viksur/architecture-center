@@ -1,10 +1,10 @@
 # Data considerations for microservices
 
-This section describes considerations for managing data in a microservices architecture. Some of the main challenges are data integrity, eventual consistency, and master data management.
+This section describes considerations for managing data in a microservices architecture. Because every microservice manages its own data, data integrity and data consistency become challenges.
 
 ![](./images/data-considerations.png)
 
-A basic principle of microservices is that each service manages its own data. Two services should not share a database. A service is responsible for its own private database, which other services cannot access directly.
+A basic principle of microservices is that each service manages its own data. Two services should not share a data store. A service is responsible for its own private data store, which other services cannot access directly.
 
 The reason for this rule is to avoid tight coupling between services. We want every service to be updated and deployed independently, and sharing a database creates a dependency. If there is a change to the data schema, the change must be coordinated across every service that relies on that database. By isolating each service's data store, we can limit the scope of change, and preserve the agility of truly independent deployments.
 
@@ -36,7 +36,7 @@ There is no single approach that's correct in all cases, but here are some gener
 
 - Consider whether your services are coherent and loosely coupled. If two services are continually exchaning information with each other, resulting in chatty APIs, you may need to redraw your service boundaries, by merging two services or refactoring their functionality.
 
-- Use an [event driven architecture style](../guide/architecture-styles/event-driven.md). In this archtecture style, a service publishes an event there are changes to its public models or entities. Interested services can subscribe to these events. For example, another service could use the events to construct a materialized view of the data that is more suitable for querying.
+- Use an [event driven architecture style](../guide/architecture-styles/event-driven.md). In this archtecture style, a service publishes an event there are changes to its public models or entities. Interested services can subscribe to these events. For example, another service could use the events to construct a materialized view of the data that is more suitable for querying. 
 
 - A service that sends events should publish a schema that can be used to automate serializing and deserializing events, to avoid tight coupling between publishers and subscribers. Consider JSON schema or a framework like [Microsoft Bond](https://github.com/Microsoft/bond), Protobuf, or Avro. Think about how you will version the event schema. 
  
@@ -50,7 +50,7 @@ When a user schedules a new delivery, the client request includes information ab
 
 The various backend services care about different subsets of the information the request, and also have different read and write profiles. 
 
-- The Delivery service stores information about every delivery that is currently scheduled or in progress. It also listens for events from the drones, and updates the status whenever a package is picked up or dropped off.
+- The Delivery service stores information about every delivery that is currently scheduled or in progress. It also listens for events from the drones, and updates the status whenever a package is picked up or dropped off. The delivery service 
 
 - The Delivery History service listens for delivery status events from the Delivery service. It stores this data in long-term storage, for the purpose of historical queries and data analytics.
 
@@ -59,6 +59,8 @@ The various backend services care about different subsets of the information the
 ### Delivery service
 
 It's expected that users will frequently check the status of a delivery while they are waiting for their package. Therefore, the Delivery service requires a data store that emphasizes retrieval speed over long-term storage. Also, the Delivery service does not perform any complex queries or analysis, it simply fetches the latest status for a given delivery. For these reasons, the Delivery service team chose Azure Redis Cache.
+
+
 
 ### Delivery History service
 

@@ -1,6 +1,6 @@
 # Logging and monitoring in a microservices application
 
-In any complex application, at some point something will go wrong. The application may experience failures, or become overwhelmed with requests. Logging and monitoring should provide a holistic view of how the system behaves. 
+In any complex application, at some point something will go wrong. In a microservices application, you need to track what's happening across dozens or even hundreds of services. Logging and monitoring are critically important in providing a holistic view the system. 
 
 ![](./images/monitoring.png)
 
@@ -24,7 +24,7 @@ You can categorize these into metrics and text-based logs.
 
 The article [Monitoring and diagnostics](../best-practices/monitoring.md) describes general best practices for monitoring an application. Here are some particular things to think about in the context of a microservices architecture.
 
-**Configuration and management.** Is logging and monitoring performed by a managed service, or by services deployed in the cluster? [Application Insights][app-insights] is Microsoft's managed Application Performance Management (APM) service. It has the advantage of being easy to deploy and configure, and provides an end-to-end solution for telemetry, monitoring, and analysis. Another options is to collect and store telemetry inside the cluster. This approach can have performance and cost benefits, especially at high scale. For more discussion of these options, see the section [Technology Options][#technology-options], below.   
+**Configuration and management**. Is logging and monitoring performed by a managed service, or by services deployed in the cluster? [Application Insights][app-insights] is Microsoft's managed Application Performance Management (APM) service. It has the advantage of being easy to deploy and configure, and provides an end-to-end solution for telemetry, monitoring, and analysis. Another options is to collect and store telemetry inside the cluster. This approach can have performance and cost benefits, especially at high scale. For more discussion of these options, see the section [Technology Options][#technology-options], below.
 
 **Ingestion rate**. What is the throughput at which the system can ingest telemetry events? What happens if that rate is exceeded? For example, the system may throttle clients, in which case telemetry data is lost, or it may downsample the data. Sometimes you can mitigate this problem by reducing the amount of data that you collect:
 
@@ -33,6 +33,8 @@ The article [Monitoring and diagnostics](../best-practices/monitoring.md) descri
   - Downsample the data &mdash; that is, process only a percentage of the events.   
 
   - Batch to reduce the number of network calls to the monitoring service
+
+**Cost**. The cost of ingesting and storing telemetry data may be high, especially at high volumes. In some cases it could even exceed the cost of running the application. In that case, you may need to reduce the volume of telemetry by aggregating, downsampling, or batching the data, as described above. 
         
 **Data fidelity**. How accurate are the metrics? Averages can hide outliers, especially at scale. Also, if the sampling rate is too low, it can smooth out fluctuations in the data. It may appear that 
 
@@ -67,7 +69,7 @@ Use a logging abstraction that you can plug in a pipeline by configuration.
 Handle batching and aggregation in the pipeline, not directly in the app code. Pipeline can also enrich the events with extra information (e.g. correlation ID)
 -->
 
-## Correlation IDs and distributed tracing
+## Distributed tracing
 
 As mentioned, one challenge in microservices is understanding the flow of events across services. A single operation or transaction may involve calls to multiple services. In order reconstruct the entire sequence of steps, each service should propagate a *correlation ID* that acts as a unique identitifer for that operation. The correlation ID enables [distributed tracing](http://microservices.io/patterns/observability/distributed-tracing.html) across services.
 

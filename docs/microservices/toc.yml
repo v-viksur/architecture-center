@@ -9,13 +9,13 @@
     href: domain-analysis.md
   - name: Tactical DDD
     href: tactical-ddd.md
-  - name: Ingestion and workflow
-    href: ingestion-workflow.md
   - name: Interservice communication
     href: interservice-communication.md
   - name: API design
     href: api-design.md
-  - name: Gateway
+  - name: Ingestion and workflow
+    href: ingestion-workflow.md
+  - name: API Gateway
     href: gateway.md
   - name: Data considerations
     href: data-considerations.md
