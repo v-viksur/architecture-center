@@ -114,11 +114,13 @@ Recall that the development team had identified the following aggregates: Delive
 
 - Drone and Account are interesting because they reside in external bounded contexts. Another option is to call directly into those external contexts. Another option is to create Drone and Account microservices that mediate between the Shipping bounded context and the other contexts. These microservices might expose APIs or data schemas that are more suited to the Shipping context. The other bounded contexts are beyond the scope of this guidance, so we'll treat Done and Account as "placeholders" whose implementation is yet to be determined. But here are some factors that you might consider in this situation:
 
-    - What is the network overhead of calling directly into another bounded context? 
+    - What is the network overhead of calling directly into the other bounded context? 
     
-    - Is the data schema from the other context suitable for this context?
+    - Is the data schema for the other bounded context suitable for this context?
      
-    - Will multiple services take a direct dependency on an external context? If so, you might want to create a mediator service that acts as an anti-corruption layer.
+    - Is the bounded context a legacy system? If so, you might want to create a mediator service that acts as an [anti-corruption layer](./patterns/anti-corruption-layer.md).
+     
+    - What is the team structure? Is it easy to communicate with the team that's responsible for the other bounded context? If not, creating a mediator service can help to mitigate the cost of cross-team communication.
      
 So far, we've haven't considered any non-functional requirements. Thinking about the application's throughput requirements, the development team decides to create a separate Ingestion microservice that is responsible for ingesting client requests. This microservice will implement [load leveling](../patterns/queue-based-load-leveling.md) by putting incoming requests into a buffer for processing. The Scheduler will read the requests from the buffer and execute the workflow.
 
@@ -126,3 +128,7 @@ The following diagram shows the design at this point:
  
 ![](./images/microservices.png)
 
+We implemented all but one of these microservices as Docker container images running in Kubernetes. The only exception is the Delivery History service, which is implemented using Azure Functions.
+
+- It’s an event-driven workload that uses a trigger to save events to a data store, along with a very simple HTTP endpoint for querying.
+- It's relatively isolated from the other services. It does not run as part of the main workflow, so running outside of the cluster won't affect the end-to-end latency of user-initiated operations. 

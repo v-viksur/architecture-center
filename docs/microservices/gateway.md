@@ -14,7 +14,8 @@ In a microservices architecture, how should a client communicate with the variou
 - It can result in complex client code. The client must keep track of multiple endpoints, and handle failures in a resilient way. 
 - It creates coupling between the client and the backend. The client needs to know how the individual services are decomposed. That makes it harder to maintain the client and also harder to refactor services.
 - Each individual service must handle concerns such as authentication, SSL, and client rate limiting. 
-- Services must expose a client-friendly protocol such as HTTP or WebSocket. This limits the choice of [communication protocols](./interservice-communication.md) 
+- Services must expose a client-friendly protocol such as HTTP or WebSocket. This limits the choice of [communication protocols](./interservice-communication.md). 
+- Services with public endpoints are a potential attack surface. 
 
 To address these problems, an API gateway sits between the clients and the backend services. A gateway can perform a number of different functions. Depending on your scenario, you may not need all of them. These functions can be grouped into the following patterns:
 
@@ -33,6 +34,8 @@ Here are some examples of functionality that could be offloaded to a gateway:
 - Logging and monitoring
 - Response caching
 - Web application firewall
+- GZIP compression
+- Servicing static content
 
 ## Choosing a gateway technology
 
@@ -103,9 +106,6 @@ To connect API Management to a Kubernetes cluster in Azure:
 4. Find the private IP of the internal load balancer, using kubectl or the Azure CLI.
 5. Use API Management to create an API that directs to the private IP address of the load balancer.
 
-Consider combining API Management with a reverse proxy, whether Nginx, HAProxy, or Azure Application Gateway. 
-
-> [!NOTE]
-> To use API Management with Application Gateway, see [Integrate API Management in an internal VNET with Application Gateway](/azure/api-management/api-management-howto-integrate-internal-vnet-appgateway)
+Consider combining API Management with a reverse proxy, whether Nginx, HAProxy, or Azure Application Gateway. For information about using API Management with Application Gateway, see [Integrate API Management in an internal VNET with Application Gateway](/azure/api-management/api-management-howto-integrate-internal-vnet-appgateway).
 
 
