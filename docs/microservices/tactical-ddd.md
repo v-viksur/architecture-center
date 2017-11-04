@@ -118,7 +118,7 @@ Recall that the development team had identified the following aggregates: Delive
     
     - Is the data schema for the other bounded context suitable for this context?
      
-    - Is the bounded context a legacy system? If so, you might want to create a mediator service that acts as an [anti-corruption layer](./patterns/anti-corruption-layer.md).
+    - Is the bounded context a legacy system? If so, you might want to create a mediator service that acts as an [anti-corruption layer](../patterns/anti-corruption-layer.md).
      
     - What is the team structure? Is it easy to communicate with the team that's responsible for the other bounded context? If not, creating a mediator service can help to mitigate the cost of cross-team communication.
      
@@ -128,7 +128,4 @@ The following diagram shows the design at this point:
  
 ![](./images/microservices.png)
 
-We implemented all but one of these microservices as Docker container images running in Kubernetes. The only exception is the Delivery History service, which is implemented using Azure Functions.
-
-- It’s an event-driven workload that uses a trigger to save events to a data store, along with a very simple HTTP endpoint for querying.
-- It's relatively isolated from the other services. It does not run as part of the main workflow, so running outside of the cluster won't affect the end-to-end latency of user-initiated operations. 
+We implemented all but one of these microservices as Docker container images running in Kubernetes. The only exception is the Delivery History service, which is implemented using Azure Functions. We chose Functions for this service because it’s an event-driven workload that uses a trigger to save events to a data store, along with a very simple HTTP endpoint for querying. Also, it's relatively isolated from the other services. It doesn't run as part of the main workflow, so running outside of the cluster won't affect the end-to-end latency of user-initiated operations. 
