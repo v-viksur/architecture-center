@@ -23,7 +23,7 @@ To address these problems, an API gateway sits between the clients and the backe
 
 [Gateway Aggregation](../patterns/gateway-aggregation.md). Use the gateway to aggregate multiple individual requests into a single request. This pattern applies when a single operation requires calls to multiple backend services. The client sends one request to the gateway. The gateway dispatches requests to the various backend services, and then aggregates the results and sends them back to the client. This helps to reduce chattiness between the client and the backend. 
 
-[Gateway Offloading](../patterns/gateway-offloading.md). Use the gateway to offload functionality from individual services to the gateway, particularly cross-cutting concerns. It can be useful to consolidate these functions into one place, rather than making every service responsible for implementing them. This is paricularly true for features that requires specialized skills to implement correctly, such as authentication and authorization. 
+[Gateway Offloading](../patterns/gateway-offloading.md). Use the gateway to offload functionality from individual services to the gateway, particularly cross-cutting concerns. It can be useful to consolidate these functions into one place, rather than making every service responsible for implementing them. This is particularly true for features that requires specialized skills to implement correctly, such as authentication and authorization. 
 
 Here are some examples of functionality that could be offloaded to a gateway:
 
@@ -87,7 +87,7 @@ To connect Application Gateway to a Kubernetes cluster in Azure:
 
 1. Create an empty subnet in the cluster VNet.
 2. Deploy Application Gateway.
-3. Create a Kubernetes service with type=[NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport). This exposes the service on each node so that it can be reached frmo outside the cluster. It does not create a load balancer.
+3. Create a Kubernetes service with type=[NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport). This exposes the service on each node so that it can be reached from outside the cluster. It does not create a load balancer.
 5. Get the assigned port number for the service.
 6. Add an Application Gateway rule where:
     - The backend pool contains the agent VMs.

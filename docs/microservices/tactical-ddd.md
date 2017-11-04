@@ -22,7 +22,7 @@ If you are already familiar with DDD, you can skip this section. The patterns ar
  
 **Value objects**. A value object has no identity. It is defined only by the values of its attributes. Value objects are also immutable. To update a value object, you always create a new instance to replace the old one. Value objects can have methods that encapsulate domain logic, but those methods should have no side-effects on the object's state. Typical examples of value objects include colors, dates and times, and currency values. 
 
-**Aggregates**. An aggregate defines a consistency boundary around one or more entities. Exactly one entity in an aggegrate is the root. Lookup is done using the root entity's identifier. Any other entities in the aggregate are children of the root, and are referenced by following pointers from the root. 
+**Aggregates**. An aggregate defines a consistency boundary around one or more entities. Exactly one entity in an aggregate is the root. Lookup is done using the root entity's identifier. Any other entities in the aggregate are children of the root, and are referenced by following pointers from the root. 
 
 The purpose of an aggregate is to model transactional invariants. Things in the real world have complex webs of relationships. Customers create orders, orders contain products, products have suppliers, and so on. If the application modifies several related objects, how does it guarantee consistency? How do we keep track of invariants and enforce them?  
 
@@ -97,10 +97,10 @@ What is the right size for a microservice? "Not too big and not too small" &mdas
 
     - Each service has a single responsibility.
     - There are no chatty calls between services. If splitting functionality into two services causes them to be overly chatty, it may be a symptom that these functions belong in the same service.
-    - Each service is small enought that it can be built by a small team working independently. A team for a single service should probably not be more than a dozen people (the "two-pizza rule").
+    - Each service is small enough that it can be built by a small team working independently. A team for a single service should probably not be more than a dozen people (the "two-pizza rule").
     - You haven't created inter-dependencies that will require services to be deployed in lock-step. It should always be possible to deploy a service without redeploying any other services.
     - Services are not tightly coupled, and can evolve independently.
-    - Your service boundaries will not create problems with data consistency or integrity. Microservices maintain their own data stores, and sometimes it's important to maintain data consistency by putting functionality into a single microservice. That said, consider whether you really need strong consistency. There are strategies for addressing eventual consistency in a distributed system, and the benefits of decomposing services often outweight the costs of eventual consistency.
+    - Your service boundaries will not create problems with data consistency or integrity. Microservices maintain their own data stores, and sometimes it's important to maintain data consistency by putting functionality into a single microservice. That said, consider whether you really need strong consistency. There are strategies for addressing eventual consistency in a distributed system, and the benefits of decomposing services often outweigh the costs of eventual consistency.
 
 Above all, it's important to be pragmatic, and remember that domain-driven design is an iterative process. When in doubt, start with more coarse-grained microservices. Splitting a microservice into two smaller services is a easier than refactoring functionality across several existing microservices.
     

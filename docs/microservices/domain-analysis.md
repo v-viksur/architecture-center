@@ -9,7 +9,7 @@ Here are two guiding principles:
 
 Microservices are *loosely coupled* if you can change one service without requiring other services to be updated at the same time. Later in this guidance we will discuss some best practices to keep services decoupled. A microservice is *cohesive* if it has a single, well-defined purpose, such as managing user accounts or tracking delivery history. 
 
-However, there is no mechanical process that will produce the "right" design. You have to think deeply about your business domain, requirements, and goals. Otherwise, you might end up with a hapharzard design that exihibits some undesireable characteristics, such as hidden dependencies between services, tight coupling, or poorly designed interfaces. 
+However, there is no mechanical process that will produce the "right" design. You have to think deeply about your business domain, requirements, and goals. Otherwise, you might end up with a haphazard design that exhibits some undesirable characteristics, such as hidden dependencies between services, tight coupling, or poorly designed interfaces. 
 
 ![](./images/ddd-process.png)
 
@@ -28,11 +28,11 @@ Before writing any code, you need a bird's eye view of the entire system that yo
 
 A domain model must include behaviors and business rules &mdash; it's not just a data schema or an object graph. The domain model is not code. The application code conforms to the model, and expresses the model, but the model is logically separate from the implementation. (However, don't make the mistake of thinking that DDD has to follow a waterfall model, where the domain model is finalized before starting to implement. The domain model should evolve with the application.)
 
-Using a DDD approach will help you to design microservices so way that every service forms a natural fit to a functional business requirement. It can help you to avoid the trap of letting yoru design be dictated by organizational boundaries or technology choices &mdash; say, putting unrelated functionality into the same service simply because they both use a SQL database.
+Using a DDD approach will help you to design microservices so way that every service forms a natural fit to a functional business requirement. It can help you to avoid the trap of letting your design be dictated by organizational boundaries or technology choices &mdash; say, putting unrelated functionality into the same service simply because they both use a SQL database.
 
 The journey begins with domain analysis. Start by mapping all of the business functions and their connections. This will likely be a collaborative effort that involves domain experts, software engineers, and other stakeholders. You don't need to use any particular formalism.  Sketch a diagram or draw on whiteboard.
 
-As you fill in the diagram, you may start of indentify discrete subdomains. Which functions are closely related? Which functions are core to the business, and which provide ancillary services? What is the dependency graph? 
+As you fill in the diagram, you may start of identify discrete subdomains. Which functions are closely related? Which functions are core to the business, and which provide ancillary services? What is the dependency graph? 
 
 During this initial phase, you aren't concerned with technologies or implementation details. That said, you should note the place where the application will need to integrate with external systems, such as CRM, payment processing, or billing systems. 
 

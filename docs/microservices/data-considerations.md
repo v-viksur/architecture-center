@@ -18,9 +18,9 @@ This approach naturally leads to [polyglot persistence](https://martinfowler.com
 
 ## Challenges
 
-Some challenges arise from this distributed approach to managing data. First, there may be redundancy across the data stores, with the same item of data appearing in mulitple places. For example, data might be stored as part of a transaction, then stored elsewhere for analytics, reporting, or archiving. Duplicated or partitioned data can lead to issues of data integrity and consistency. When data relationships span multiple services, you can't use traditional data management techniques to enforce the relationships.
+Some challenges arise from this distributed approach to managing data. First, there may be redundancy across the data stores, with the same item of data appearing in multiple places. For example, data might be stored as part of a transaction, then stored elsewhere for analytics, reporting, or archiving. Duplicated or partitioned data can lead to issues of data integrity and consistency. When data relationships span multiple services, you can't use traditional data management techniques to enforce the relationships.
 
-Traditional data modeling uses the rule of "one fact in one place." Every entity appears exactly once in the schema. Other entities may hold references to it but not duplicate it. The obvious advantage to the traditional approach is that updates are made in a single place, which avoids problems with data consistency. In a microservices architecture, you have to consider how updates are propaged across services, and how to manage eventual consistency when data appears in multiple places without strong consistency. 
+Traditional data modeling uses the rule of "one fact in one place." Every entity appears exactly once in the schema. Other entities may hold references to it but not duplicate it. The obvious advantage to the traditional approach is that updates are made in a single place, which avoids problems with data consistency. In a microservices architecture, you have to consider how updates are propagated across services, and how to manage eventual consistency when data appears in multiple places without strong consistency. 
 
 ## Approaches to managing data
 
@@ -34,9 +34,9 @@ There is no single approach that's correct in all cases, but here are some gener
 
 - Store only the data that a service needs. A service might only need a subset of information about a domain entity. For example, in the delivery bounded context, we need to know which customer is associated to a particular delivery. But we don't need the customer's billing address &mdash; that's managed by the Accounts bounded context. Thinking carefully about the domain, and using a DDD approach, can help here. 
 
-- Consider whether your services are coherent and loosely coupled. If two services are continually exchaning information with each other, resulting in chatty APIs, you may need to redraw your service boundaries, by merging two services or refactoring their functionality.
+- Consider whether your services are coherent and loosely coupled. If two services are continually exchanging information with each other, resulting in chatty APIs, you may need to redraw your service boundaries, by merging two services or refactoring their functionality.
 
-- Use an [event driven architecture style](../guide/architecture-styles/event-driven.md). In this archtecture style, a service publishes an event there are changes to its public models or entities. Interested services can subscribe to these events. For example, another service could use the events to construct a materialized view of the data that is more suitable for querying. 
+- Use an [event driven architecture style](../guide/architecture-styles/event-driven.md). In this architecture style, a service publishes an event there are changes to its public models or entities. Interested services can subscribe to these events. For example, another service could use the events to construct a materialized view of the data that is more suitable for querying. 
 
 - A service that sends events should publish a schema that can be used to automate serializing and deserializing events, to avoid tight coupling between publishers and subscribers. Consider JSON schema or a framework like [Microsoft Bond](https://github.com/Microsoft/bond), Protobuf, or Avro. Think about how you will version the event schema. 
  
@@ -66,12 +66,12 @@ It's expected that users will frequently check the status of a delivery while th
 
 The Delivery History service has two main functions:
 
-- Enable analysis of the aggregated data, looking for patterns or trends over time, in order to opmitize the business or improve the quality of the service. (The Delivery History service doesn't perform the actual analysis of the data. It's only responsible for the ingestion and storage.)
+- Enable analysis of the aggregated data, looking for patterns or trends over time, in order to optimize the business or improve the quality of the service. (The Delivery History service doesn't perform the actual analysis of the data. It's only responsible for the ingestion and storage.)
 - Enable users to look up the history of a delivery after the delivery is completed.
 
-These two use-cases have different requirements. The first must be optimized for performing data analysis on a large set of data, using a schema-on-read approach to accomodate a variety of data sources. Azure Data Lake Store is a good fit for this scenario. Data Lake Store is an Apache Hadoop file system compatible with Hadoop Distributed File System (HDFS), and is tuned for performance for data analytics scenarios. 
+These two use-cases have different requirements. The first must be optimized for performing data analysis on a large set of data, using a schema-on-read approach to accommodate a variety of data sources. Azure Data Lake Store is a good fit for this scenario. Data Lake Store is an Apache Hadoop file system compatible with Hadoop Distributed File System (HDFS), and is tuned for performance for data analytics scenarios. 
 
-For optimal performance , Microsoft recommends storing data in Data Lake Stoere in larger sized files (at least 256MB), and organizing time-series data into folders partitioned by date. For more information, see [Tuning Azure Data Lake Store for performance](/azure/data-lake-store/data-lake-store-performance-tuning-guidance). However, that structure is not optimal for looking up individual records by ID. Therefore, the Delivery History service also stores data in Cosmos DB for quicker lookup. Only the fields needed to query the status of a delivery are stored in Cosmos DB. Periodically, older history data can be purged from Cosmos DB. 
+For optimal performance , Microsoft recommends storing data in Data Lake Store in larger sized files (at least 256MB), and organizing time-series data into folders partitioned by date. For more information, see [Tuning Azure Data Lake Store for performance](/azure/data-lake-store/data-lake-store-performance-tuning-guidance). However, that structure is not optimal for looking up individual records by ID. Therefore, the Delivery History service also stores data in Cosmos DB for quicker lookup. Only the fields needed to query the status of a delivery are stored in Cosmos DB. Periodically, older history data can be purged from Cosmos DB. 
 
 ### Package service
 

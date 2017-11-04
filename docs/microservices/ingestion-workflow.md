@@ -32,7 +32,7 @@ Based on business requirements, the development team identified the following no
 - Handle spikes of up to 100K/sec without dropping client requests or timing out.
 - Less than 500ms latency in the 99th percentile.
 
-The requirement to handle occasional spikes in traffic presents a design challenge. In theory, the system could be scaled out to handle the maximum expected traffic. However, provisioning that many resources woud be very inefficient. Most of the time, the application will not need that much capacity, so there would be idle cores, costing money without adding value.
+The requirement to handle occasional spikes in traffic presents a design challenge. In theory, the system could be scaled out to handle the maximum expected traffic. However, provisioning that many resources would be very inefficient. Most of the time, the application will not need that much capacity, so there would be idle cores, costing money without adding value.
 
 A better approach is to put the incoming requests into a buffer, and let the buffer act as a load leveler. With this design, the Ingestion service must be able to the maximum ingestion rate of 100K requests/second over short periods, but the backend services only need to handle the maximum sustained load of 10K. By buffering at the front end, the backend services shouldn't need to handle large spikes in traffic.
 
@@ -62,11 +62,9 @@ We looked at three options for reading and processing the messages: Event Proces
 
 Event Processor Host is designed for message batching. The application implements the `IEventProcessor` interface, and the Processor Host creates one `IEventProcessor` instance for each partition in the event hub. Horizontal scaling is achieved by having each Processor Host instance compete to hold a lease on the available partitions. Over time, partition leases are distributed evenly across Processor Host instances. 
 
-![](./images/partition-lease.png)
-
 The Event Processor Host calls the application's `IEventProcessor.ProcessEventsAsync` method with batches of event messages. The application controls when to checkpoint inside the `ProcessEventsAsync` method, and the Event Processor Host writes the checkpoints to Azure storage. 
 
-Within a partitition, Event Processor Host waits for `ProcessEventsAsync` to return before calling again with the next batch. This approach simplifies the programming model, because your `IEventProcessor` implementation does not have to be reentrant. However, it also means that the event processor handles one batch at a time, and this gates the speed at which the Processor Host can pump messages.
+Within a partition, Event Processor Host waits for `ProcessEventsAsync` to return before calling again with the next batch. This approach simplifies the programming model, because your `IEventProcessor` implementation does not have to be reentrant. However, it also means that the event processor handles one batch at a time, and this gates the speed at which the Processor Host can pump messages.
 
 > [!NOTE] 
 > The Processor Host doesn't actually *wait* in the sense of blocking a thread. The `ProcessEventsAsync` method is asynchronous, so the Processor Host can do other work while the method is completing. But it won't deliver another batch of messages from that partition until the method returns. 
@@ -79,7 +77,7 @@ In the drone application, a batch of messages can be processed in parallel. But 
 
 Akka Streams is also a very natural programming model for streaming events from Event Hubs. Instead of looping through a batch of events, you define a set of operations on events, and let Akka Streams handle the streaming. 
 
-IoTHub React uses a different checkpoint strategy than Event Host Processor. The checkpoint logic resides in a sink, which is the terminating stage in a pipeline. The design of Akka Streams allows the pipeline to continue streaming data while the sink is writing the checkpoint. That means the upstream processing stages don't need to wait on the checkpoint. You can configure chcekpoint to occur after a timeout or after a certain number of messages have been processed. 
+IoTHub React uses a different checkpoint strategy than Event Host Processor. The checkpoint logic resides in a sink, which is the terminating stage in a pipeline. The design of Akka Streams allows the pipeline to continue streaming data while the sink is writing the checkpoint. That means the upstream processing stages don't need to wait on the checkpoint. You can configure chcekpointing to occur after a timeout or after a certain number of messages have been processed. 
 
 We designed the Scheduler service so that each container instance reads from a single partition. The partition number is configured through an environment variable. To read from 32 partitions, we deploy the Scheduler service in 32 pods, and assign each pod to a different partition. That provides a lot of flexibility in placing the pods within the Kubernetes cluster. That way, the service can scale horizontally by adding additional nodes to the cluster, so that each node has fewer pods running. Our performance tests showed that the Scheduler service is memory- and thread-bound, so performance depended greatly on the VM size and the number of pods per node.
 
@@ -129,10 +127,7 @@ If the logic for compensating transactions is complex, consider creating a separ
 
 ## Idempotent vs non-idempotent operations
 
-In order not to lose any requests, the Scheduler service must guarantee that all messages are processed at least once.
-
-- Service Bus Queues can guarantee at-least-once delivery by using PeekLock mode.
-- Event Hubs can guarantee at-least-once delivery if the client checkpoints correctly.
+To avoid losing any requests, the Scheduler service must guarantee that all messages are processed at least once. Event Hubs can guarantee at-least-once delivery if the client checkpoints correctly.
 
 If the Scheduler service crashes, it may be in the middle of processing one or more client requests. Those messages will be picked up by another instance of the Scheduler and reprocessed. What happens if a request is processed twice? It's important to avoid duplicating any work. After all, we don't want the system to send two drones for the same package.
 

@@ -8,11 +8,11 @@ Communication between microservices must be efficient and robust. With lots of s
 
 There are two basic messaging patterns that microservices can use to communicate with other microservices. 
 
-1. Synchronous communication. In this pattern, a service calls an API that another service exposes, using a protocol such as HTTP. This option is a *sychronous* messaging pattern, because the caller waits for a response from the receiver. 
+1. Synchronous communication. In this pattern, a service calls an API that another service exposes, using a protocol such as HTTP. This option is a *synchronous* messaging pattern, because the caller waits for a response from the receiver. 
 
-2. Asychronous message passing. In this pattern, a service sends an message or event, that another service processes *asynchronously*. 
+2. Asynchronous message passing. In this pattern, a service sends an message or event, that another service processes *asynchronously*. 
 
-It's important to distinguish between asynchronous I/O and an asynchronous protocol. Asynchronous I/O means the calling thread is not blocked while the I/O completes. That's important for performance, but is an implementation detail in terms of the architecture. An asynchronous protocol means the sender doesn't wait for a response. HTTP is a sychronous protocol, even though an HTTP client may use asynchronous I/O when it sends a request. 
+It's important to distinguish between asynchronous I/O and an asynchronous protocol. Asynchronous I/O means the calling thread is not blocked while the I/O completes. That's important for performance, but is an implementation detail in terms of the architecture. An asynchronous protocol means the sender doesn't wait for a response. HTTP is a synchronous protocol, even though an HTTP client may use asynchronous I/O when it sends a request. 
 
 There are tradeoffs to each pattern. Request/response is a well-understood paradigm, so designing an API may feel more natural than designing a messaging system. However, asynchronous messaging has some advantages that can be very useful in a microservices architecture:
 
@@ -20,7 +20,7 @@ There are tradeoffs to each pattern. Request/response is a well-understood parad
 
 - **Multiple subscribers**. Using a pub/sub model, multiple consumers can subscribe to receive events. See [Event-driven architecture style](/azure/architecture/guide/architecture-styles/event-driven).
 
-- **Failure isolation**. If the consumer goes down, the sender can still continue to send messages. The messages will be picked up when the consumer recovers. This ability is especially useful in a microservices architecture, because each service has its own lifecycle. A service could become unavailable or be replaced with a newer version at any given time. Asynchrounous messaging can handle intermittent downtime. Synchronous APIs, on the other hand, require the downstream service to be available or the operation fails. 
+- **Failure isolation**. If the consumer goes down, the sender can still continue to send messages. The messages will be picked up when the consumer recovers. This ability is especially useful in a microservices architecture, because each service has its own lifecycle. A service could become unavailable or be replaced with a newer version at any given time. Asynchronous messaging can handle intermittent downtime. Synchronous APIs, on the other hand, require the downstream service to be available or the operation fails. 
  
 - **Asynchronous operations**. The message sender does not have to wait for the consumer to respond. This is especially useful in a microservices architecture. If there is a chain of service dependencies (service A calls B, which calls C, and so on), waiting on synchronous calls can add unacceptable amounts of latency.
 
@@ -28,7 +28,7 @@ There are tradeoffs to each pattern. Request/response is a well-understood parad
 
 - **Workflows**. Queues can be used to manage a workflow, by check-pointing the message after each step in the workflow.
 
-However, there are also some challenges to using asychronous messaging effectively.
+However, there are also some challenges to using asynchronous messaging effectively.
 
 - **Coupling with the messaging infrastructure**. Using a particular messaging infrastructure may cause tight coupling with that infrastructure. It will be difficult to switch to another messaging infrastructure later.
 
@@ -38,7 +38,7 @@ However, there are also some challenges to using asychronous messaging effective
 
 - **Complexity**. Handling asynchronous messaging is not a trivial task. For example, you must handle duplicated messages, either by de-duplicating or by making operations idempotent. It's also hard to implement request-response semantics using asynchronous messaging. To send a response, you need another queue, plus a way to correlate request and response messages by message ID.
 
-- **Throughput**. If messages require *queue semantics*, the queue can become a bottleneck in the system. Each message requires at least one queue oepration and one dequeue operation. Moreoever, queue semantics generally require some kind of locking inside the messaging infrastructure. If the queue is a managed service, there may be additional latency, because the queue is external to the cluster’s virtual network. You can mitigate these issues by batching messages, but that complicates the code. If the messages don't require queue semantics, you might be able to use an event *stream* instead of a queue. For more information, see [Event-driven architectural style](../guide/architecture-styles/event-driven.md).  
+- **Throughput**. If messages require *queue semantics*, the queue can become a bottleneck in the system. Each message requires at least one queue operation and one dequeue operation. Moreover, queue semantics generally require some kind of locking inside the messaging infrastructure. If the queue is a managed service, there may be additional latency, because the queue is external to the cluster’s virtual network. You can mitigate these issues by batching messages, but that complicates the code. If the messages don't require queue semantics, you might be able to use an event *stream* instead of a queue. For more information, see [Event-driven architectural style](../guide/architecture-styles/event-driven.md).  
 
 ## Communication in the Drone Delivery application
 

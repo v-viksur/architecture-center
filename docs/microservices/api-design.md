@@ -13,9 +13,9 @@ These two use cases have somewhat different requirements. The public API must be
 
 You have to consider several aspects of how an API is implemented:
 
-- **REST or RPC interface**. For a RESTful interface, the most common choice is REST over HTTP using JSON. For an RPC-style interface, there are several popular frameworks, including gRPC, Appache Avro, and Apache Thrift.  
+- **REST or RPC interface**. For a RESTful interface, the most common choice is REST over HTTP using JSON. For an RPC-style interface, there are several popular frameworks, including gRPC, Apache  Avro, and Apache Thrift.  
 
-- **Interface definition language (IDL)**. An IDL is used to define the methods, parameters, and return values of an API. An IDL can be used to generate client code, serialiation code, and API documentation. IDLs can also be cnosumed by API testing tools such as Postman. Frameworks such as gRPC, Avro, and Thrift define their own IDL specifications. REST over HTTP does not have a standard IDL format, but a common choice is OpenAPI (formerly Swagger). You can also create an HTTP REST API without using a formal defininition language, but then you lose the benefits of code generation and testing.
+- **Interface definition language (IDL)**. An IDL is used to define the methods, parameters, and return values of an API. An IDL can be used to generate client code, serialization code, and API documentation. IDLs can also be consumed by API testing tools such as Postman. Frameworks such as gRPC, Avro, and Thrift define their own IDL specifications. REST over HTTP does not have a standard IDL format, but a common choice is OpenAPI (formerly Swagger). You can also create an HTTP REST API without using a formal definition language, but then you lose the benefits of code generation and testing.
 
 - **Serialization format**. This defines how are objects are serialized over the wire. Options include JSON and XML, which are text-based, or binary formats such as protocol buffer. 
 
@@ -67,9 +67,9 @@ Here are some specific considerations to keep in mind.
 
 - HTTP methods can have asynchronous semantics, where the method returns a response immediately, but the service carries out the operation asynchronously. The method should return an HTTP 202 response code in that case.
 
-## Mapping REST to DDD patterrns
+## Mapping REST to DDD patterns
 
-code generationPatterns such as entity, aggregate, and value object are designed to place certain constraints on the objects in your domain model. For example, value objects are immutable. In many discussions of DDD, the patterns are modeled using OO language concepts like constructors or property getters and setters. 
+Patterns such as entity, aggregate, and value object are designed to place certain constraints on the objects in your domain model. For example, value objects are immutable. In many discussions of DDD, the patterns are modeled using OO language concepts like constructors or property getters and setters. 
 
 For example, here is a TypeScript implementation of a value object. The properties are declared to be read-only, so the only way to modify a Location is to create a new one. The properties are validated when the object is created.
 
@@ -105,7 +105,7 @@ As a result, code has a smaller surface area. If the Drone Management service de
 
 In this guidance, we focus less on OO coding principles, and put more emphasis on API design. But it turns out that RESTful APIs can model many of the tactical DDD concepts.
 
-- RESTful APIs model *resources*, which map naturally to aggregates. Aggegates are consistency boundaries. Operations on aggregates should never leave an aggregate in an inconsistent states.  Instead of creating APIs allow a client to manipulate the internal state of an aggregate, favor coarse-grained APIs that expose aggregates as resources.
+- RESTful APIs model *resources*, which map naturally to aggregates. Aggregates are consistency boundaries. Operations on aggregates should never leave an aggregate in an inconsistent states.  Instead of creating APIs allow a client to manipulate the internal state of an aggregate, favor coarse-grained APIs that expose aggregates as resources.
 
 - Aggregates are addressable by ID. Aggregates correspond to resources, and the URL is the stable identifier.
 
