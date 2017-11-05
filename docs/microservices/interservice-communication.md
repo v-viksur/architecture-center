@@ -1,4 +1,4 @@
-# Interservice communication
+# Designing microservices: Interservice communication
 
 Communication between microservices must be efficient and robust. With lots of small services interacting to complete a single transaction, this can be a challenge. In this chapter, we look at the tradeoffs between asynchronous messaging versus synchronous APIs. Then we look at some of the challenges in designing resilient inter-service communication, and the role that a service mesh can play.
 

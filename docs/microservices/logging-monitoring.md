@@ -1,4 +1,4 @@
-# Logging and monitoring in a microservices application
+# Designing microservices: Logging and monitoring
 
 In any complex application, at some point something will go wrong. In a microservices application, you need to track what's happening across dozens or even hundreds of services. Logging and monitoring are critically important in providing a holistic view the system. 
 

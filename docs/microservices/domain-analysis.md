@@ -1,4 +1,4 @@
-# Apply domain driven design 
+# Designing microservices: Domain analysis 
 
 When designing microservices, one of the biggest challenges is defining the boundaries of individual services. The general rule is that a service should do "one thing" &mdash; but putting that rule into practice requires careful thought. 
 

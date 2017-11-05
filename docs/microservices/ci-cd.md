@@ -1,4 +1,4 @@
-## Implementing CI/CD for microservices
+## Designing microservices: Continuous integration
 
 Continuous integration and continuous deployment (CI/CD) are a key requirement for achieving success with microservices. Without a good CI/CD process, you will not achieve the agility that microservices promise. This section describes some of the challenges of CI/CD for microservices (multiple code bases, heterogenous build environments), along with a suggested approach.
 

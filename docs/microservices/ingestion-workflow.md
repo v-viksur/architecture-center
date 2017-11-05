@@ -1,4 +1,4 @@
-# Ingestion and workflow
+# Designing microservices: Ingestion and workflow
 
 Microservices often have a workflow that spans multiple services for a single transaction. The workflow must be reliable; it can't lose transactions or leave them in a partially completed state. It's also critical to control the ingestion rate of incoming requests. With many small services communicating with each other, a burst of incoming requests can overwhelm the inter-service communication. 
 

@@ -1,6 +1,6 @@
-# Apply tactical DDD patterns
+# Designing microservices: Tacical DDD
 
-Domain driven design has two distinct phases, strategic and tactical. In strategic DDD, you are defining the large-scale structure of the system. Tactical DDD provides a set of design patterns that you can use to create the domain model. In this section, we'll apply the tactical DDD patterns to the Drone Delivery application.
+Domain driven design has two distinct phases, strategic and tactical. In strategic DDD, you are defining the large-scale structure of the system. Tactical DDD provides a set of design patterns that you can use to create the domain model. In this section, we use these patterns to identify microservice boundaries in the Drone Delivery application.
 
 ![](./images/bounded-contexts.png)
 
@@ -36,7 +36,7 @@ Traditional applications have often used database transactions to enforce consis
 > [!NOTE]
 > The term *service* is overloaded in computer programming. The definition here is not directly related to microservices.
 
-**Domain events**. Domain events can be used to notify other parts of the system when something happens. As the name signifies, domain events should model things that are meaningful in terms of the domain, not the implementation details. For example, "Record inserted in table" is not a domain event. "Delivery cancelled" is a domain event. Domain events are especially relevant in a microservices architecture, where services are distributed and do not share data stores. The chapter [Interservice communication](./interservice-communciation.md) looks at asynchronous messaging in microservices.
+**Domain events**. Domain events can be used to notify other parts of the system when something happens. As the name signifies, domain events should model things that are meaningful in terms of the domain, not the implementation details. For example, "Record inserted in table" is not a domain event. "Delivery cancelled" is a domain event. Domain events are especially relevant in a microservices architecture, where services are distributed and do not share data stores. The chapter [Interservice communication](./interservice-communication.md) looks at asynchronous messaging in microservices.
  
 There are a few other DDD patterns not listed here, including factories, repositories, and modules. These can be useful patterns within a microservice, but are less relevant for our purposes.
 

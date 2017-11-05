@@ -1,4 +1,4 @@
-# API design for microservices
+# Designing microservices: API design
 
 Good API design is important in a microservices architecture, because every service manages its own data, which means that data exchange happens either through messages or through API calls. APIs must be efficient, to avoid creating [chatty I/O](../antipatterns/chatty-io/index.md). Because services are designed by teams working independently, APIs must have well-defined semantics and versioning schemes, so that updates don't break other services.
 

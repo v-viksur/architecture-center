@@ -1,4 +1,4 @@
-# Implement an API gateway for microservices
+# Designing microservices: API gateways
 
 When there are many backend services, how does a client know where they're located and how to reach them? What happens when new services are created, or an existing service is modified? 
 
