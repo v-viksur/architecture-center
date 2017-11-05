@@ -31,7 +31,7 @@ Done correctly, microservices can provide a number of useful benefits:
 
 - **Mix of technologies**. Teams can pick the technology that best fits their service, using a mix of technology stacks as appropriate. 
 
-- **Resiliency.** A service can go down without taking down the entire application. 
+- **Resiliency.** If you design microservices correctly, as a set of independent, loosely coupled services, then an individual service can go down without taking down the entire application. 
 
 - **Scalability.** At cloud scale, you would like the ability to scale out the parts of the application that are especially resource intensive, without scaling out the entire application. With microservices, services can be scaled independently. At the same time, by running services in containers, you pack a higher density of service instances onto a single VM. 
 
@@ -55,7 +55,6 @@ These benefits don't come for free. This series of articles is designed to addre
 - **CI/CD**. One of the main goals of microservices is agility. You must have automated and robust [CI/CD](./ci-cd.md), so that you can quickly and reliably deploy individual services into test and production environments. 
 
 - **Team structure**. Can you successfully organize into small, semi-independent teams? Do you have a strong DevOps culture? [Conway's law](https://en.wikipedia.org/wiki/Conway%27s_law) says that organizations create software that mirrors their organizational structure. If your team structure and processes still reflect a "monolithic app" worldview, it will be hard to achieve the agility that microservices promise. Team organization is not a topic that we explore deeply in this series, but it's something to consider before you embark on a microservices architecture.
-
 
 <!-- - **Testing**. The decentralized nature of building microservices requires new approaches to testing. During development, you will test an individual service against stubs or API contracts. Then perform integration testing in a production-like test environment (test cluster). Performance tests and load tests are also critical.  -->
 

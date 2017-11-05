@@ -35,6 +35,8 @@ Traditional applications have often used database transactions to enforce consis
 
 > [!NOTE]
 > The term *service* is overloaded in computer programming. The definition here is not directly related to microservices.
+
+**Domain events**. Domain events can be used to notify other parts of the system when something happens. As the name signifies, domain events should model things that are meaningful in terms of the domain, not the implementation details. For example, "Record inserted in table" is not a domain event. "Delivery cancelled" is a domain event. Domain events are especially relevant in a microservices architecture, where services are distributed and do not share data stores. The chapter [Interservice communication](./interservice-communciation.md) looks at asynchronous messaging in microservices.
  
 There are a few other DDD patterns not listed here, including factories, repositories, and modules. These can be useful patterns within a microservice, but are less relevant for our purposes.
 

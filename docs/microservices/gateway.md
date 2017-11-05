@@ -15,7 +15,7 @@ In a microservices architecture, how should a client communicate with the variou
 - It creates coupling between the client and the backend. The client needs to know how the individual services are decomposed. That makes it harder to maintain the client and also harder to refactor services.
 - Each individual service must handle concerns such as authentication, SSL, and client rate limiting. 
 - Services must expose a client-friendly protocol such as HTTP or WebSocket. This limits the choice of [communication protocols](./interservice-communication.md). 
-- Services with public endpoints are a potential attack surface. 
+- Services with public endpoints are a potential attack surface, and must be hardened.
 
 To address these problems, an API gateway sits between the clients and the backend services. A gateway can perform a number of different functions. Depending on your scenario, you may not need all of them. These functions can be grouped into the following patterns:
 
