@@ -106,7 +106,7 @@ What is the right size for a microservice? "Not too big and not too small" &mdas
 
 Above all, it's important to be pragmatic, and remember that domain-driven design is an iterative process. When in doubt, start with more coarse-grained microservices. Splitting a microservice into two smaller services is a easier than refactoring functionality across several existing microservices.
     
-## Drone Delivery: Defining the microservice boundaries
+## Drone Delivery: Defining the microservices
 
 Recall that the development team had identified the following aggregates: Delivery, Package, Drone, and Account. The first two are part of the Shipping bounded context, while Drone and Account belong to other bounded contexts.
 

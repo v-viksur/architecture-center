@@ -31,7 +31,7 @@ In the context of Kubernetes and microservices, CI applies to building the conta
  
 These challenges reflect a fundamental tension. On the one hand, teams need to work as independently as possible. On the other hand, some coordination is needed so that a single person can do tasks like running an integration test, redeploying the entire solution to a new cluster, or rolling back a bad update. 
  
-## Approaches to CI/CD
+## CI/CD approaches for microservices
 
 It's a good practice for every service team to containerize their build environment. This container should have all of the build tools necessary to build the code artifacts for their service. Often you can find an official Docker image for your language and framework. Then you can use `docker run` or Docker Compose to run the build. 
 
@@ -52,7 +52,6 @@ When the image is ready to go into production, update the deployment files as ne
 You may want to create a separate container registry for production, that will only hold known-good images. If you combine this approach with semantic versioning, then you can always find the last-known-good image in case you need to roll back. 
 
 You may want to define a set of organization-wide conventions for image labels and versioning, and a set of naming conventions for resources deployed to the cluster (pods, services, and so on). That can make it easier to diagnose deployment issues.  
-
  
 
 

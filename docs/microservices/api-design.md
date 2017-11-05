@@ -49,7 +49,7 @@ Our baseline recommendation is to choose REST over API unless you need the perfo
 
 However, if you choose REST over HTTP, you should do performance and load testing early in the development process, to validate whether it performs well enough for your scenario.
 
-## API design considerations
+## RESTful API design
 
 There are many resources for designing RESTful APIs. Here are some that you might find helpful:
 

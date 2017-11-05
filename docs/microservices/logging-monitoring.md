@@ -20,7 +20,7 @@ You can categorize these into metrics and text-based logs.
 
 *Logs* are records of events that occur while the application is running. They include things like application logs (trace statements) or web server logs. Logs are primarily useful for forensics and root cause analysis. 
 
-## Considerations for logging and monitoring in a microservices architecture
+## Considerations
 
 The article [Monitoring and diagnostics](../best-practices/monitoring.md) describes general best practices for monitoring an application. Here are some particular things to think about in the context of a microservices architecture.
 

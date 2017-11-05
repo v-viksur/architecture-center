@@ -42,7 +42,7 @@ There is no single approach that's correct in all cases, but here are some gener
  
 - At high scale, events can become a bottleneck on the system, so consider using aggregation or batching to reduce the total load. 
 
-## Data storage in the Drone Delivery application
+## Drone Delivery: Choosing the data stores 
 
 Even with only a few services, the Shipping bounded context illustrates several of the points discussed in this section. 
 
@@ -59,8 +59,6 @@ The various backend services care about different subsets of the information the
 ### Delivery service
 
 It's expected that users will frequently check the status of a delivery while they are waiting for their package. Therefore, the Delivery service requires a data store that emphasizes retrieval speed over long-term storage. Also, the Delivery service does not perform any complex queries or analysis, it simply fetches the latest status for a given delivery. For these reasons, the Delivery service team chose Azure Redis Cache.
-
-
 
 ### Delivery History service
 

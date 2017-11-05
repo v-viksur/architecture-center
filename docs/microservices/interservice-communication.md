@@ -66,15 +66,15 @@ With these considerations in mind, the development team made the following desig
 
 - The Ingestion service uses Event Hubs to send asynchronous messages to the Scheduler service. Asynchronous messages are necessary to implement the load-leveling that is required for ingestion. For details on how the Ingestion and Scheduler services interact, see [Ingestion and workflow][ingestion-workflow].
 
-- The Account, Delivery, Package, Drone, and Third-party Transport services all expose internal REST APIs. The Scheduler service calls these APIs to carry out a user request. One reason to use synchronous APIs is that the Scheduler needs to get a response from the downstream services. A failure in any of the downstream services means the entire operation failed. However, a potential issue is the amount of latency that is introduced by calling the backend services. Later, we discuss the workflow in more detail in the chapter [Ingestion and workflow][ingestion-workflow].
+- The Account, Delivery, Package, Drone, and Third-party Transport services all expose internal REST APIs. The Scheduler service calls these APIs to carry out a user request. One reason to use synchronous APIs is that the Scheduler needs to get a response from the downstream services. A failure in any of the downstream services means the entire operation failed. However, a potential issue is the amount of latency that is introduced by calling the backend services. 
 
 - The Delivery service also exposes a public API that clients can use to get the status of a delivery. In the chapter [API gateway](./gateway.md), we discuss using an API gateway can hide the underlying services from the client, so the client doesn't need to know which services expose which APIs. 
 
 - The Drone service sends events about the drone's current location and status. The Delivery service listens to these events, in order to track the status of a delivery.
 
-- The Delivery service sends delivery status events, including Created, Rescheduled, InTransit, and DeliveryComplete. Any interested service can subscribe to these updates. In the current design, the Delivery Service is the only subscriber, but it's possible that other services might need to consume these events. For example, they might be used for a dashboard or real-time analytics service. Another reason to use events is that it removes the consumers from the workflow path, meaning the Delivery Scheduler does not have to wait on them.
+- The Delivery service sends delivery status events, including DeliveryCreated, DeliveryRescheduled, DeliveryInTransit, and DeliveryComplete. Any interested service can subscribe to these updates. In the current design, the Delivery History service is the only subscriber, but it's possible that other services might need to consume these events. For example, they might be used for a dashboard or real-time analytics service. Another reason to use events is that it removes the consumers from the workflow path, meaning the Delivery Scheduler does not have to wait on them.
 
-- The Delivery History service subscribes to the delivery events and stores the history of every delivery. 
+- If any of the downstream services fails during a transaction, the Scheduler service sends an asynchronous message to the Supervisor, so that the Supervisor can schedule compensating transactions, as described in the chapter [Ingestion and workflow][ingestion-workflow].   
 
 ![](./images/drone-communication.png)
 
