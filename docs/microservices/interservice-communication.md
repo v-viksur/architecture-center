@@ -4,6 +4,24 @@ Communication between microservices must be efficient and robust. With lots of s
 
 ![](./images/interservice-communication.png)
 
+## Challenges 
+
+Here are some of the main challenges arising from service-to-service communication. Service meshes, described later in this chapter, are designed to handle many of these challenges.
+
+**Resiliency.** There may be dozens or even hundreds of instances of any given service. In Kubernetes, these instances are deployed as pods. The Kubernetes scheduler is in charge of assigning a node for each pod. Pods may be destroyed and recreated for any number of reasons. It might be a node-level failure, such as a hardware failure or a VM reboot. Or Kubernetes may *evict* a pod because of resource constraints on the node. A pod template may be updated, causing a restart. A container may crash. Two patterns can help make service-to-service network calls more resilient:
+
+- **[Retry](../patterns/retry.md)**. A network call may fail because of a transient fault that is self-correcting. Rather than fail outright, the caller should typically retry the operation a certain number of times, or until a configured time-out period elapses. However, if an operation is not idempotent, retries can cause unintended side effects. The original call might succeed, but the caller never gets a response. If the caller retries, the operation may be invoked twice. Generally, it's not safe to retry POST or PATCH methods, because these are not guaranteed to be idempotent.
+
+- **[Circuit Breaker](../patterns/circuit-breaker.md)**. Too many failed requests can cause a bottleneck, as pending requests accumulate in the queue. These blocked requests might hold critical system resources such as memory, threads, database connections, and so on, which can cause cascading failures. The Circuit Breaker pattern can prevent a service from repeatedly trying an operation that is likely to fail. 
+
+**Load balancing**. When service "A" calls service "B", the request must be directed to a particular instance of service "B". In Kubernetes, the `Service` resource type provides a stable IP address for a group of pods. Network traffic to the service's IP address gets forwarded to a pod by means of iptable rules. By default, a random pod is chosen. A service mesh (see below) can provide more intelligent load balancing algorithms based on observed latency or other metrics.
+
+**Distributed tracing**. A single transaction may span multiple services. That can make it hard to monitor the overall performance and health of the system. Every service can be generating logs and metrics, but if there's no way to tie them together, they are of limited use. The chapter [Logging and monitoring](./logging-monitoring.md) talks more about distribute tracing, but we mention it here as a challenge.
+
+**Service versioning**. When a team deploys a new version of a service, they must avoid breaking any other services or external clients that depend on it. In addition, you might want to run multiple versions of a service side-by-side, and route requests to a particular version. 
+
+**TLS encryption and mutual TLS authentication**. For security reasons, you may want to encrypt traffic between services with TLS, and use mutual TLS authentication to authenticate callers.
+
 ## Synchronous versus asynchronous messaging
 
 There are two basic messaging patterns that microservices can use to communicate with other microservices. 
@@ -40,7 +58,7 @@ However, there are also some challenges to using asynchronous messaging effectiv
 
 - **Throughput**. If messages require *queue semantics*, the queue can become a bottleneck in the system. Each message requires at least one queue operation and one dequeue operation. Moreover, queue semantics generally require some kind of locking inside the messaging infrastructure. If the queue is a managed service, there may be additional latency, because the queue is external to the cluster’s virtual network. You can mitigate these issues by batching messages, but that complicates the code. If the messages don't require queue semantics, you might be able to use an event *stream* instead of a queue. For more information, see [Event-driven architectural style](../guide/architecture-styles/event-driven.md).  
 
-## Communication in the Drone Delivery application
+## Drone Delivery: Choosing the messaging patterns
 
 With these considerations in mind, the development team made the following design choices for the Drone Delivery application
 
@@ -62,25 +80,7 @@ With these considerations in mind, the development team made the following desig
 
 Notice that delivery status events are derived from drone location events. For example, when a drone reaches a delivery location and drops off a package, the Delivery service translates this into a DeliveryCompleted event. This is an example of thinking in terms of domain models. As described earlier, Drone Management belongs in a separate bounded context. The drone events convey the physical location of a drone. The delivery events, on the other hand, represent changes in the status of a delivery, which is a different business entity.
 
-## Challenges 
-
-Here are some challenges related to interservice communication. Service meshes, described in the next section, are designed to handle many of these challenges.
-
-**Resiliency.** There may be dozens or even hundreds of instances of any given service. In Kubernetes, these instances are deployed as pods. The Kubernetes scheduler is in charge of assigning a node for each pod. Pods may be destroyed and recreated for any number of reasons. It might be a node-level failure, such as a hardware failure or a VM reboot. Or Kubernetes may *evict* a pod because of resource constraints on the node. A pod template may be updated, causing a restart. A container may crash. Two patterns can help make service-to-service network calls more resilient:
-
-- **[Retry](../patterns/retry.md)**. A network call may fail because of a transient fault that is self-correcting. Rather than fail outright, the caller should typically retry the operation a certain number of times, or until a configured time-out period elapses. However, if an operation is not idempotent, retries can cause unintended side effects. The original call might succeed, but the caller never gets a response. If the caller retries, the operation may be invoked twice. Generally, it's not safe to retry POST or PATCH methods, because these are not guaranteed to be idempotent.
-
-- **[Circuit Breaker](../patterns/circuit-breaker.md)**. Too many failed requests can cause a bottleneck, as pending requests accumulate in the queue. These blocked requests might hold critical system resources such as memory, threads, database connections, and so on, which can cause cascading failures. The Circuit Breaker pattern can prevent a service from repeatedly trying an operation that is likely to fail. 
-
-**Load balancing**. When service "A" calls service "B", the request must be directed to a particular instance of service "B". In Kubernetes, the `Service` resource type provides a stable IP address for a group of pods. Network traffic to the service's IP address gets forwarded to a pod by means of iptable rules. By default, a random pod is chosen. A service mesh (see below) can provide more intelligent load balancing algorithms based on observed latency or other metrics.
-
-**Distributed tracing**. A single transaction may span multiple services. That can make it hard to monitor the overall performance and health of the system. Every service can be generating logs and metrics, but if there's no way to tie them together, they are of limited use. The chapter [Logging and monitoring](./logging-monitoring.md) talks more about distribute tracing, but we mention it here as a challenge.
-
-**Service versioning**. When a team deploys a new version of a service, they must avoid breaking any other services or external clients that depend on it. In addition, you might want to run multiple versions of a service side-by-side, and route requests to a particular version. 
-
-**TLS encryption and mutual TLS authentication**. For security reasons, you may want to encrypt traffic between services with TLS, and use mutual TLS authentication to authenticate callers.
-
-## Service mesh
+## Using a service mesh
 
 A *service mesh* is a software layer that handles service-to-service communication. Service meshes are designed to address many of the concerns listed in the previous section, and to move responsibility for these concerns away from the microservices themselves and into a shared layer. The service mesh acts as a proxy that intercepts network communication between microservices in the cluster. 
 
@@ -100,6 +100,11 @@ Right now, the two main service mesh options for Kubernetes are Istio and linker
 - Service mesh captures metrics about interservice calls, such as the request volume, latency, error and success rates, and response sizes. The service mesh also enables distributed tracing by adding correlation information for each hop in a request.
 
 - Mutual TLS Authentication for service-to-service calls.
+
+Do you need a service mesh? The value they add to a distributed system is certainly compelling. If you don't have a service mesh, you will need to consider each of the challenges mentioned at the begining of the chapter. You can solve problems like retry, circuit breaker, and distributed tracing without a service mesh, but a service mesh moves these concerns out of the individual services and into a dedicated layer.
+
+On the other hand, service meshes are a relatively new technology that is still maturing. Deploying a service mesh adds some complexity to the setup and configuration of the cluster. There may be performance implications, because requests now get routed through the service mesh proxy, and because extra services are now running on every node in the cluster. 
+
 
 
 

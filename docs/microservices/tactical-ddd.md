@@ -1,6 +1,6 @@
-# Designing microservices: Tacical DDD
+# Designing microservices: Tactical DDD
 
-Domain driven design has two distinct phases, strategic and tactical. In strategic DDD, you are defining the large-scale structure of the system. Tactical DDD provides a set of design patterns that you can use to create the domain model. In this section, we use these patterns to identify microservice boundaries in the Drone Delivery application.
+Domain driven design (DDD) has two distinct phases, strategic and tactical. In strategic DDD, you are defining the large-scale structure of the system. Tactical DDD provides a set of design patterns that you can use to create the domain model. In this section, we use these patterns to identify microservice boundaries in the Drone Delivery application.
 
 ![](./images/bounded-contexts.png)
 
@@ -38,7 +38,7 @@ Traditional applications have often used database transactions to enforce consis
 
 **Domain events**. Domain events can be used to notify other parts of the system when something happens. As the name signifies, domain events should model things that are meaningful in terms of the domain, not the implementation details. For example, "Record inserted in table" is not a domain event. "Delivery cancelled" is a domain event. Domain events are especially relevant in a microservices architecture, where services are distributed and do not share data stores. The chapter [Interservice communication](./interservice-communication.md) looks at asynchronous messaging in microservices.
  
-There are a few other DDD patterns not listed here, including factories, repositories, and modules. These can be useful patterns within a microservice, but are less relevant for our purposes.
+There are a few other DDD patterns not listed here, including factories, repositories, and modules. These can be useful patterns within a microservice, but are less relevant for designing service boundaries.
 
 ## Define entities and aggregates
 
@@ -106,7 +106,7 @@ What is the right size for a microservice? "Not too big and not too small" &mdas
 
 Above all, it's important to be pragmatic, and remember that domain-driven design is an iterative process. When in doubt, start with more coarse-grained microservices. Splitting a microservice into two smaller services is a easier than refactoring functionality across several existing microservices.
     
-## Drone Delivery microservices
+## Drone Delivery: Defining the microservice boundaries
 
 Recall that the development team had identified the following aggregates: Delivery, Package, Drone, and Account. The first two are part of the Shipping bounded context, while Drone and Account belong to other bounded contexts.
 
