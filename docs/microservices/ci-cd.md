@@ -59,6 +59,8 @@ Here are some recommendations for making deployments more reliable:
 
 ## Updating services
 
+There are various strategies for updating a service that's already in production. Here we discuss three common options: Rolling update, blue-green deployment, and canary release.
+
 ### Rolling update 
 
 In a rolling update, you deploy new instances of a service, and the new instances start receiving requests right away. As the new instances come up, the previous instances are removed.
@@ -83,8 +85,8 @@ An advantage of blue-green deployments is that the service switches all the pods
 
 In a canary release, you roll out an updated version to a small number of clients. Then you monitor the behavior of the new service before rolling it out to all clients. This lets you do a slow rollout in a controlled fashion, observe real data, and spot problems before all customers are affected.
 
-A canary release requires that you be able to dynamically route requests to both versions of the service. If you are using a service mesh, you can use the service mesh routing rules for that purpose. 
+A canary release requires that you be able to dynamically route requests to both versions of the service. If you are using a service mesh, you can use the service mesh routing rules for that purpose. Here are some resources that may be helpful:
 
-- Linkerd: [Dynamic request routing(https://linkerd.io/features/routing/)]
+- Linkerd: [Dynamic request routing](https://linkerd.io/features/routing/)
 - Istio: [Canary Deployments using Istio](https://istio.io/blog/canary-deployments-using-istio.html)
 

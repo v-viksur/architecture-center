@@ -87,7 +87,7 @@ A *service mesh* is a software layer that handles service-to-service communicati
 > [!NOTE]
 > Service mesh is an example of the [Ambassador pattern](../patterns/ambassador.md) &mdash; a helper service that sends network requests on behalf of the application. 
 
-Right now, the two main service mesh options for Kubernetes are Istio and linkerd. Both are evolving rapidly, but some common features of both include:
+Right now, the two main options for a service mesh in Kubernetes are Istio and linkerd. Both are evolving rapidly, but some common features of both include:
 
 - Load balancing at the session level, based on observed latencies or number of outstanding requests. This can improve performance over the layer-4 load balancing that is provided by Kubernetes. 
 
@@ -104,8 +104,5 @@ Right now, the two main service mesh options for Kubernetes are Istio and linker
 Do you need a service mesh? The value they add to a distributed system is certainly compelling. If you don't have a service mesh, you will need to consider each of the challenges mentioned at the begining of the chapter. You can solve problems like retry, circuit breaker, and distributed tracing without a service mesh, but a service mesh moves these concerns out of the individual services and into a dedicated layer.
 
 On the other hand, service meshes are a relatively new technology that is still maturing. Deploying a service mesh adds some complexity to the setup and configuration of the cluster. There may be performance implications, because requests now get routed through the service mesh proxy, and because extra services are now running on every node in the cluster. 
-
-
-
 
 [ingestion-workflow]: ./ingestion-workflow.md
