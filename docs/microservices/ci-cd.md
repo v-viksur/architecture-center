@@ -85,8 +85,9 @@ An advantage of blue-green deployments is that the service switches all the pods
 
 In a canary release, you roll out an updated version to a small number of clients. Then you monitor the behavior of the new service before rolling it out to all clients. This lets you do a slow rollout in a controlled fashion, observe real data, and spot problems before all customers are affected.
 
-A canary release requires that you be able to dynamically route requests to both versions of the service. If you are using a service mesh, you can use the service mesh routing rules for that purpose. Here are some resources that may be helpful:
+A canary release is more complex to manage than either blue-green or rolling update, becayuse you must dynamically route requests to different versions of the service. In Kubernetes, you can configure a Service to span two replica sets (one for each version) and adjust the replica counts manually. However, this approach is rather coarse-grained, because of the way Kubernetes load balances across pods. For example, if you have a total of ten replicas, you can only shift traffic in 10% increments. If you are using a service mesh, you can use the service mesh routing rules to implement a more sophisticated canary release strategy. Here are some resources that may be helpful:
 
+- Kubernetes without service mesh: [Canary deployments](https://kubernetes.io/docs/concepts/cluster-administration/manage-deployment/#canary-deployments)
 - Linkerd: [Dynamic request routing](https://linkerd.io/features/routing/)
 - Istio: [Canary Deployments using Istio](https://istio.io/blog/canary-deployments-using-istio.html)
 
