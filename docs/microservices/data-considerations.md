@@ -1,6 +1,6 @@
 # Designing microservices: Data considerations
 
-This section describes considerations for managing data in a microservices architecture. Because every microservice manages its own data, data integrity and data consistency become challenges.
+This chapter describes considerations for managing data in a microservices architecture. Because every microservice manages its own data, data integrity and data consistency become challenges.
 
 ![](./images/data-considerations.png)
 

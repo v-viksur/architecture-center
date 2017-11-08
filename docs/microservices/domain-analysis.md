@@ -58,7 +58,7 @@ It's also worth noting that not everything in the diagram will be implemented wi
 
 The domain model will include representations of real things in the world &mdash; users, drones, packages, and so forth. But that doesn't mean that every part of the system needs to use the same representation. 
 
-For example, the parts of the system that handle drone repair and predictive analysis will need to represent many of the physical characteristics of each drone in the fleet, such as maintenance history, mileage, age, model number, performance characteristics, and so on. But when it's time to schedule a delivery, we don't care about those things. The application only needs to know whether a drone is avalable, and the ETA for pickup and delivery. 
+For example, the parts of the system that handle drone repair and predictive analysis will need to represent many of the physical characteristics of each drone in the fleet, such as maintenance history, mileage, age, model number, performance characteristics, and so on. But when it's time to schedule a delivery, we don't care about those things. The application only needs to know whether a drone is available, and the ETA for pickup and delivery. 
 
 If we tried to create a single model for both subsystems, drone repair and deliveries, the model would be unnecessarily complex. In addition, it becomes harder to evolve the model over time, because changes have to satisfy multiple teams working on separate subsystems. Therefore, it's often better to have separate models that represent the same real-world entity (in this case, a drone) in two different contexts. 
 

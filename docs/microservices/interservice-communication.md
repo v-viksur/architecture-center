@@ -26,9 +26,9 @@ Here are some of the main challenges arising from service-to-service communicati
 
 There are two basic messaging patterns that microservices can use to communicate with other microservices. 
 
-1. Synchronous communication. In this pattern, a service calls an API that another service exposes, using a protocol such as HTTP. This option is a *synchronous* messaging pattern, because the caller waits for a response from the receiver. 
+1. Synchronous communication. In this pattern, a service calls an API that another service exposes, using a protocol such as HTTP. This option is a synchronous messaging pattern because the caller waits for a response from the receiver. 
 
-2. Asynchronous message passing. In this pattern, a service sends an message or event, that another service processes *asynchronously*. 
+2. Asynchronous message passing. In this pattern, a service sends an message or event, that another service processes asynchronously. 
 
 It's important to distinguish between asynchronous I/O and an asynchronous protocol. Asynchronous I/O means the calling thread is not blocked while the I/O completes. That's important for performance, but is an implementation detail in terms of the architecture. An asynchronous protocol means the sender doesn't wait for a response. HTTP is a synchronous protocol, even though an HTTP client may use asynchronous I/O when it sends a request. 
 
@@ -101,7 +101,7 @@ Right now, the two main options for a service mesh in Kubernetes are Istio and l
 
 - Mutual TLS Authentication for service-to-service calls.
 
-Do you need a service mesh? The value they add to a distributed system is certainly compelling. If you don't have a service mesh, you will need to consider each of the challenges mentioned at the begining of the chapter. You can solve problems like retry, circuit breaker, and distributed tracing without a service mesh, but a service mesh moves these concerns out of the individual services and into a dedicated layer.
+Do you need a service mesh? The value they add to a distributed system is certainly compelling. If you don't have a service mesh, you will need to consider each of the challenges mentioned at the beginning of the chapter. You can solve problems like retry, circuit breaker, and distributed tracing without a service mesh, but a service mesh moves these concerns out of the individual services and into a dedicated layer.
 
 On the other hand, service meshes are a relatively new technology that is still maturing. Deploying a service mesh adds some complexity to the setup and configuration of the cluster. There may be performance implications, because requests now get routed through the service mesh proxy, and because extra services are now running on every node in the cluster. 
 
