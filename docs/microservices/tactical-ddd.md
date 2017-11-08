@@ -130,4 +130,25 @@ The following diagram shows the design at this point:
  
 ![](./images/microservices.png)
 
+## Choosing a compute option
+
+The term *compute* refers to the hosting model for the computing resources that your application runs on. The first high-level decision is choosing between an orchestrator or a serverless architecture. With an orchestrator, services run on nodes (VMs) and the orchestrator acts as a control plane. The orchestrator provides functionality such as service discovery, load balancing, configuration, scheduling (placing services on nodes), health monitoring, restarting unhealthy services, network routing, scaling, and so on. With a serverless architecture, you don't manage the VMs or the virtual network infrastructure. Instead, you deploy code and the hosting service handles putting that code onto a VM and executing it. This approach tends to favor small granular functions, that are coordinated by applying event-based triggers to functions. For example, putting a message onto a queue may trigger a function that reads from the queue.
+
+Options for using an orchestrator in Azure include:
+
+- Azure Container Service (ACS). ACS is an SLA-backed Azure service that lets you deploy a production-ready Kubernetes, DC/OS, or Docker Swarm cluster.
+- [ACS Engine][acs-engine]. ACS Engine is an open-source tool that generates Azure Resource Manager (RM) templates for Kubernetes, DC/OS, or Docker Swarm clusters. Unlike ACS, ACS Engine is not a hosted Azure service, and does not offer an SLA. However, it enables some advanced configuration options that are not currently available in ACS. For more information, see [Container Service frequently asked questions][acs-faq].
+- AKS (Azure Container Service). AKS is a managed Kubernetes service. AKS provisions Kubernetes and exposes the Kubernetes API endpoints, but hosts and manages the Kubernetes control plane, performing automated upgrades, automated patching, autoscaling, and other management tasks. You can think of AKS as being "Kubernetes APIs as a service." At the time of writing, AKS is still in preview. However, it's expected that AKS will become the preferred way to run Kubernetes in Azure.
+- Service Fabric. Service Fabric orchestrates services that can run as containers, binary executables, or as Reliable Services. Reliable Services is a light-weight framework for writing services that integrate with the Service Fabric platform.
+
+[Azure Functions][functions] provides a serverless compute service. It supports a variety of triggers, including HTTP request, Service Bus queue, and Event Hubs events. For a complete list, see [Azure Functions triggers and bindings concepts][functions-triggers]. Also consider [Azure Event Grid][event-grid], which is a managed event routing service in Azure. Although this guide is focused on microservices deployed in Kubernetes, we did implement one of our microservices as an Azure Function. 
+
 We implemented all but one of these microservices as Docker container images running in Kubernetes. The only exception is the Delivery History service, which is implemented using Azure Functions. We chose Functions for this service because it’s an event-driven workload that uses a trigger to save events to a data store, along with a very simple HTTP endpoint for querying. Also, it's relatively isolated from the other services. It doesn't run as part of the main workflow, so running outside of the cluster won't affect the end-to-end latency of user-initiated operations. 
+
+<!-- links -->
+
+[acs-engine]: https://github.com/Azure/acs-engine
+[acs-faq]: /azure/container-service/dcos-swarm/container-service-faq
+[event-grid]: /azure/event-grid/
+[functions]: /azure/azure-functions/functions-overview
+[functions-triggers]: /azure/azure-functions/functions-triggers-bindings
