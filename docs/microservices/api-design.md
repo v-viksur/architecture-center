@@ -45,7 +45,7 @@ Here are some things to think about when choosing how to implement an API.
 
 - Do you need protocol translation? If you choose a protocol like gRPC, you may need a protocol translation layer between the public API and the back end. A [gateway](./gateway.md) can perform that function.
 
-Our baseline recommendation is to choose REST over API unless you need the performance benefits of a binary protocol. REST over HTTP requires no special libraries. It creates minimal coupling, because callers don't need a client stub to communicate with the service. There is rich toolset around REST and HTTP, for schema definition, testing, and monitoring. Finally, HTTP is compatible with browser clients, so you don’t need a protocol translation layer between the client and the backend. 
+Our baseline recommendation is to choose REST over API unless you need the performance benefits of a binary protocol. REST over HTTP requires no special libraries. It creates minimal coupling, because callers don't need a client stub to communicate with the service. There is rich toolset around REST and HTTP, for schema definition, testing, and monitoring. Finally, HTTP is compatible with browser clients, so you don't need a protocol translation layer between the client and the backend. 
 
 However, if you choose REST over HTTP, you should do performance and load testing early in the development process, to validate whether it performs well enough for your scenario.
 
