@@ -3,6 +3,7 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 871.8 673.2" style="enable-background:new 0 0 871.8 673.2;" xml:space="preserve">
 <style type="text/css">
+	text{font-family:segoe-ui_normal,Segoe UI,Segoe,Segoe WP,Helvetica Neue,Helvetica,sans-serif;font-weight:500}
 	.st0{fill:#C8C8C8;}
 	.st1{fill:#C6C6C6;}
 	.st2{fill:#747474;}
@@ -67,10 +68,8 @@
 	.st61{clip-path:url(#SVGID_30_);}
 	.st62{clip-path:url(#SVGID_32_);}
 	.st63{clip-path:url(#SVGID_34_);}
-	.st64{font-family:'SegoeUI-Semibold';}
 	.st65{font-size:20px;}
 	.st66{clip-path:url(#SVGID_36_);}
-	.st67{font-family:'SegoeUI-Bold';}
 </style>
 <title>drone</title>
 <g>
@@ -1224,9 +1223,7 @@
 		</g>
 	</g>
 </g>
-<text transform="matrix(1 0 0 1 286.54 604)" class="st64 st65">Container o</text>
-<text transform="matrix(1 0 0 1 392.6 604)" class="st64 st65">r</text>
-<text transform="matrix(1 0 0 1 399.83 604)" class="st64 st65">chestration</text>
+<text transform="matrix(1 0 0 1 286.54 604)" class="st64 st65">Container orchestration</text>
 <g>
 	<g>
 		<defs>
