@@ -1,8 +1,10 @@
-# Designing microservices on Azure
+# Designing microservices on Azure with Kubernetes
+
+![](./images/drone.svg)
 
 Microservices have become a popular architectural style for building cloud applications that are resilient, highly scalable, and able to evolve quickly. To be more than just a buzzword, however, microservices requires a different approach to designing and building applications. 
 
-In this set of articles, we explore how to build and run a microservices architecture on Azure. Topics include:
+In this set of articles, we explore how to build and run a microservices architecture on Azure, using Kubernetes as a container orchestrator. Topics include:
 
 - Using Domain Driven Design (DDD) to design a microservices architecture. 
 - Choosing the right Azure technologies for compute, storage, messaging, and other elements of the design.

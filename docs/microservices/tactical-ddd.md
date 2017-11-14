@@ -38,6 +38,8 @@ Traditional applications have often used database transactions to enforce consis
 
 **Domain events**. Domain events can be used to notify other parts of the system when something happens. As the name signifies, domain events should model things that are meaningful in terms of the domain, not the implementation details. For example, "Record inserted in table" is not a domain event. "Delivery cancelled" is a domain event. Domain events are especially relevant in a microservices architecture, where services are distributed and do not share data stores. The chapter [Interservice communication](./interservice-communication.md) looks at asynchronous messaging in microservices.
  
+![](./images/ddd-patterns.png)
+
 There are a few other DDD patterns not listed here, including factories, repositories, and modules. These can be useful patterns within a microservice, but are less relevant for designing service boundaries.
 
 ## Define entities and aggregates
@@ -99,7 +101,7 @@ What is the right size for a microservice? "Not too big and not too small" &mdas
 
     - Each service has a single responsibility.
     - There are no chatty calls between services. If splitting functionality into two services causes them to be overly chatty, it may be a symptom that these functions belong in the same service.
-    - Each service is small enough that it can be built by a small team working independently. A team for a single service should probably not be more than a dozen people (the "two-pizza rule").
+    - Each service is small enough that it can be built by a small team working independently.
     - You haven't created inter-dependencies that will require services to be deployed in lock-step. It should always be possible to deploy a service without redeploying any other services.
     - Services are not tightly coupled, and can evolve independently.
     - Your service boundaries will not create problems with data consistency or integrity. Microservices maintain their own data stores, and sometimes it's important to maintain data consistency by putting functionality into a single microservice. That said, consider whether you really need strong consistency. There are strategies for addressing eventual consistency in a distributed system, and the benefits of decomposing services often outweigh the costs of eventual consistency.
